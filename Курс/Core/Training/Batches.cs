@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static TorchSharp.torch;
 
-namespace Курс
+namespace Курс.Core.Training
 {
     public class PrecomputedBatch
     {
@@ -25,7 +25,7 @@ namespace Курс
         }
     }
 
-    public class PrecomputedBatches:IDisposable
+    public class PrecomputedBatches : IDisposable
     {
         public List<PrecomputedBatch> TrainBatches { get; set; }
         public List<PrecomputedBatch> ValBatches { get; set; }

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Курс.Core;
+using Курс.Core.Architecture;
 
-namespace Курс
+namespace Курс.NAS.Generators
 {
     public class ArchitectureGenerator
     {
@@ -17,9 +19,9 @@ namespace Курс
             _imageSize = imageSize;
         }
 
-        public Architecture GenerateArchitecture(int numLayers, int numClasses, string name = "GeneratedArch")
+        public ConcreteArchitecture GenerateArchitecture(int numLayers, int numClasses, string name = "GeneratedArch")
         {
-            var architecture = new Architecture(name);
+            var architecture = new ConcreteArchitecture(name);
 
             if (numLayers < 3)
                 throw new ArgumentException("Минимальное количество слоев: 3 (conv + pool + dense)");
@@ -51,7 +53,7 @@ namespace Курс
             return architecture;
         }
 
-        private void GenerateConvolutionalLayers(Architecture architecture, int numPairs)
+        private void GenerateConvolutionalLayers(ConcreteArchitecture architecture, int numPairs)
         {
             int size = 64;
 
@@ -64,7 +66,7 @@ namespace Курс
                 // Сверточный слой
                 var convLayer = CreateConvLayer($"conv_{i + 1}", filtersCount);
                 size = size - convLayer.KernelSize + 1;
-               
+
                 // Пуллинг слой
                 var poolLayer = CreatePoolLayer($"pool_{i + 1}");
                 size /= poolLayer.PoolSize;
@@ -101,7 +103,7 @@ namespace Курс
             return Math.Min(nextFilters, 512);
         }
 
-        private void GenerateFullyConnectedLayers(Architecture architecture, int numDenseLayers)
+        private void GenerateFullyConnectedLayers(ConcreteArchitecture architecture, int numDenseLayers)
         {
             if (numDenseLayers <= 0) return;
 
@@ -131,7 +133,7 @@ namespace Курс
             }
         }
 
-        private long CalculateFlattenSize(Architecture architecture)
+        private long CalculateFlattenSize(ConcreteArchitecture architecture)
         {
             // Вычисляем финальный размер после всех сверточных слоев
             var finalSize = architecture.CalculateFinalSize(1, _imageSize, _imageSize);
@@ -163,11 +165,11 @@ namespace Курс
             double baseRate = 0.2;
             double increment = 0.15;
 
-            return Math.Min(baseRate + (denseIndex * increment), 0.5);
+            return Math.Min(baseRate + denseIndex * increment, 0.5);
         }
 
         // Метод для генерации случайной архитектуры в заданном диапазоне слоев
-        public Architecture GenerateRandomArchitecture(int minLayers = 4, int maxLayers = 10, int numClasses = 33)
+        public ConcreteArchitecture GenerateRandomArchitecture(int minLayers = 4, int maxLayers = 10, int numClasses = 33)
         {
             int numLayers = _random.Next(minLayers, maxLayers + 1);
             return GenerateArchitecture(numLayers, numClasses, $"RandomArch_{numLayers}L");

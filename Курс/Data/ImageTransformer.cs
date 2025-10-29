@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
 
-namespace Курс
+namespace Курс.Data
 {
     public class ImageTransformer
     {
@@ -26,7 +26,7 @@ namespace Курс
 
         public Tensor Transform(string imagePath, Device device = null)
         {
-            device = device ?? torch.CPU;
+            device = device ?? CPU;
 
             try
             {
@@ -37,7 +37,7 @@ namespace Курс
                     image.Mutate(x => x.Resize(_targetWidth, _targetHeight));
 
                     // КОНВЕРТИРУЕМ В GRAYSCALE С УЧЕТОМ ПРОЗРАЧНОСТИ
-                    var tensor = torch.zeros(new long[] { 1, _targetHeight, _targetWidth });
+                    var tensor = zeros(new long[] { 1, _targetHeight, _targetWidth });
 
                     int nonZeroPixels = 0;
                     int transparentPixels = 0;
@@ -70,7 +70,7 @@ namespace Курс
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка загрузки {imagePath}: {ex.Message}");
-                return torch.zeros(new long[] { 1, _targetHeight, _targetWidth }).to(device);
+                return zeros(new long[] { 1, _targetHeight, _targetWidth }).to(device);
             }
         }
 
@@ -81,7 +81,7 @@ namespace Курс
             // Случайный поворот (±10 градусов)
             if (random.NextDouble() > 0.5)
             {
-                var angle = (random.NextDouble() * 20 - 10); // -10 to +10 degrees
+                var angle = random.NextDouble() * 20 - 10; // -10 to +10 degrees
                 context.Rotate((float)angle);
             }
 
@@ -99,7 +99,7 @@ namespace Курс
             var height = image.Height;
 
             // Создаем тензор [1, H, W] для ЧБ
-            var tensor = torch.zeros(new long[] { 1, height, width });
+            var tensor = zeros(new long[] { 1, height, width });
 
             // Заполняем тензор значениями пикселей [0, 1]
             for (int y = 0; y < height; y++)

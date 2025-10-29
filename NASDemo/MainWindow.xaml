@@ -1,0 +1,542 @@
+﻿<Window x:Class="NASDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NASDemo"
+        mc:Ignorable="d"
+         Height="900" Width="1400"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- Цветовая палитра -->
+        <Color x:Key="PrimaryColor">#FF2C3E50</Color>
+        <Color x:Key="SecondaryColor">#FF3498DB</Color>
+        <Color x:Key="AccentColor">#FF1ABC9C</Color>
+        <Color x:Key="SuccessColor">#FF27AE60</Color>
+        <Color x:Key="WarningColor">#FFE74C3C</Color>
+        <Color x:Key="LightGrayColor">#FFECF0F1</Color>
+        <Color x:Key="DarkGrayColor">#FF34495E</Color>
+
+        <!-- Кисти -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+        <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGrayColor}"/>
+        <SolidColorBrush x:Key="DarkGrayBrush" Color="{StaticResource DarkGrayColor}"/>
+
+        <!-- Стили для GroupBox -->
+        <Style x:Key="ModernGroupBoxStyle" TargetType="GroupBox">
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="{StaticResource LightGrayBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="8"/>
+                    <Setter Property="Background" Value="{StaticResource LightGrayBrush}"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+        <!-- Стили для кнопок -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Margin" Value="6"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="MinWidth" Value="90"/>
+            <Setter Property="Background" Value="{StaticResource SecondaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="6"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="{StaticResource PrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="{StaticResource DarkGrayBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="#FFBDC3C7"/>
+                                <Setter Property="Foreground" Value="#FF7F8C8D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SuccessButtonStyle" BasedOn="{StaticResource ModernButtonStyle}" 
+           TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+        </Style>
+
+        <Style x:Key="WarningButtonStyle" BasedOn="{StaticResource ModernButtonStyle}" 
+           TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
+        </Style>
+
+        <Style x:Key="AccentButtonStyle" BasedOn="{StaticResource ModernButtonStyle}" 
+           TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+        </Style>
+
+        <!-- Стили для TextBox -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Margin" Value="0,4,0,8"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FFBDC3C7"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                      Margin="{TemplateBinding Padding}"
+                                      Background="Transparent"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" 
+                                    Value="{StaticResource SecondaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стили для ComboBox -->
+        <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Margin" Value="0,4,0,8"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FFBDC3C7"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Стили для ListBox -->
+        <Style x:Key="ModernListBoxStyle" TargetType="ListBox">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FFBDC3C7"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+
+        <Style x:Key="ModernListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="{StaticResource LightGrayBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="{StaticResource SecondaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стили для ProgressBar -->
+        <Style x:Key="ModernProgressBarStyle" TargetType="ProgressBar">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Background" Value="{StaticResource LightGrayBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10">
+                            <Grid x:Name="PART_Track">
+                                <Rectangle x:Name="PART_Indicator" 
+                                       HorizontalAlignment="Left" 
+                                       RadiusX="8" RadiusY="8"
+                                       Fill="{TemplateBinding Foreground}"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стили для Slider -->
+        <Style x:Key="ModernSliderStyle" TargetType="Slider">
+            <Setter Property="Margin" Value="0,4,0,8"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+        </Style>
+
+        <!-- Стили для TextBlock -->
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="TitleTextStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- Стили для CheckBox -->
+        <Style x:Key="ModernCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Margin" Value="0,8,0,4"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- Стили для TabControl -->
+        <Style x:Key="ModernTabControlStyle" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style x:Key="ModernTabItemStyle" TargetType="TabItem">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Background" Value="{StaticResource LightGrayBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FFBDC3C7"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4,4,0,0">
+                            <ContentPresenter x:Name="contentPresenter"
+                                          ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="{StaticResource SecondaryBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" 
+                                    Value="{StaticResource SecondaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" 
+                                    Value="{StaticResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стили для Canvas (визуализация архитектуры) -->
+        <Style x:Key="ArchitectureCanvasStyle" TargetType="Canvas">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <!-- DataTemplate для архитектур -->
+        <DataTemplate x:Key="ArchitectureItemTemplate">
+            <Border BorderBrush="#FFBDC3C7" 
+            BorderThickness="1" 
+            Padding="8" 
+            Margin="2"
+            Background="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, 
+                       Path=Background}"
+            CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="{Binding DisplayName}" 
+                       FontWeight="Bold" 
+                       Foreground="{StaticResource PrimaryBrush}"
+                       FontSize="11"/>
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding LayersCount, StringFormat={}Слоев: {0}}" 
+                               FontSize="9" 
+                               Foreground="{StaticResource DarkGrayBrush}"/>
+                            <TextBlock Text="{Binding Parameters, StringFormat={}Параметров: {0:N0}}" 
+                               FontSize="9" 
+                               Foreground="{StaticResource DarkGrayBrush}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{Binding Accuracy, StringFormat={}Точность: {0:F2}%}" 
+                               FontSize="9" 
+                               Foreground="{StaticResource SuccessBrush}"
+                               FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Algorithm}" 
+                               FontSize="8" 
+                               Foreground="{StaticResource SecondaryBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource LightGrayBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="400"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Левая панель - Управление и конфигурация -->
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Background="White">
+            <StackPanel Margin="10">
+
+                <!-- Настройки поиска -->
+                <GroupBox Header="🎯 Настройки NAS" Style="{StaticResource ModernGroupBoxStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Алгоритм поиска:" Style="{StaticResource HeaderTextStyle}"/>
+                        <ComboBox x:Name="cmbSearchAlgorithm" Style="{StaticResource ModernComboBoxStyle}" SelectedIndex="0"
+                                  SelectionChanged="cmbSearchAlgorithm_SelectionChanged">
+                            <ComboBoxItem Content="🎲 Случайный поиск"/>
+                            <ComboBoxItem Content="🧬 Генетический алгоритм"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Количество испытаний:" Style="{StaticResource HeaderTextStyle}"/>
+                        <TextBox x:Name="txtTrialsCount" Text="50" Style="{StaticResource ModernTextBoxStyle}"/>
+
+                        <TextBlock Text="Эпох на оценку:" Style="{StaticResource HeaderTextStyle}"/>
+                        <TextBox x:Name="txtEpochsPerTrial" Text="10" Style="{StaticResource ModernTextBoxStyle}"/>
+
+                        <CheckBox x:Name="chkUseEarlyStopping" Content="Ранняя остановка" 
+                              Style="{StaticResource ModernCheckBoxStyle}" IsChecked="True"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Ограничения архитектуры -->
+                <GroupBox Header="🏗️ Ограничения архитектуры" Style="{StaticResource ModernGroupBoxStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Мин. слоев:" Style="{StaticResource HeaderTextStyle}"/>
+                                <TextBox x:Name="txtMinLayers" Text="4" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Макс. слоев:" Style="{StaticResource HeaderTextStyle}"/>
+                                <TextBox x:Name="txtMaxLayers" Text="15" Style="{StaticResource ModernTextBoxStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox x:Name="grpGeneticSettings" Header="Настройки ГА" Style="{StaticResource ModernGroupBoxStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Размер популяции:" Margin="0,0,0,5" Style="{StaticResource HeaderTextStyle}"/>
+                        <TextBox x:Name="txtPopulationSize" Text="20" TextAlignment="Right" Style="{StaticResource ModernTextBoxStyle}"/>
+
+                        <TextBlock Text="Поколений:" Margin="0,10,0,5" Style="{StaticResource HeaderTextStyle}"/>
+                        <TextBox x:Name="txtGenerations" Text="30" TextAlignment="Right" Style="{StaticResource ModernTextBoxStyle}"/>
+
+                        <TextBlock Text="Вероятность мутации:" Margin="0,10,0,5" Style="{StaticResource HeaderTextStyle}"/>
+                        <Slider x:Name="sldMutationRate" Minimum="0" Maximum="1" Value="0.3" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
+                        <TextBlock Text="{Binding Value, ElementName=sldMutationRate, StringFormat={}{0:P0}}" HorizontalAlignment="Center" Style="{StaticResource HeaderTextStyle}"/>
+
+                        <TextBlock Text="Вероятность кроссовера:" Margin="0,10,0,5" Style="{StaticResource HeaderTextStyle}"/>
+                        <Slider x:Name="sldCrossoverRate" Minimum="0" Maximum="1" Value="0.7" TickFrequency="0.1" IsSnapToTickEnabled="True" Style="{StaticResource ModernSliderStyle}"/>
+                        <TextBlock Text="{Binding Value, ElementName=sldCrossoverRate, StringFormat={}{0:P0}}" HorizontalAlignment="Center" Style="{StaticResource HeaderTextStyle}"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Кнопки управления -->
+                <GroupBox Header="⚙️ Управление" Style="{StaticResource ModernGroupBoxStyle}">
+                    <StackPanel>
+                        <Button x:Name="btnStartSearch" Click="btnStartSearch_Click" Content="🚀 Запуск поиска" 
+                            Style="{StaticResource SuccessButtonStyle}" Height="35"/>
+
+                        <Button x:Name="btnStopSearch" Click="btnStopSearch_Click" Content="⏹️ Остановить" 
+                            Style="{StaticResource WarningButtonStyle}" IsEnabled="False"/>
+
+                        <Button x:Name="btnExportResults" Content="💾 Экспорт результатов" 
+                            Style="{StaticResource AccentButtonStyle}"/>
+
+                        <ProgressBar x:Name="pbSearchProgress" Style="{StaticResource ModernProgressBarStyle}"/>
+                        <TextBlock x:Name="tbProgressStatus" Text="Готов к работе" 
+                               HorizontalAlignment="Center" Style="{StaticResource HeaderTextStyle}"/>
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Разделители -->
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{StaticResource PrimaryBrush}"/>
+        <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" Background="{StaticResource PrimaryBrush}"/>
+
+        <!-- Центральная панель - Визуализация архитектуры -->
+        <Grid Grid.Column="2" Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Canvas для визуализации архитектуры -->
+            <GroupBox Grid.Row="0" Header="📊 Визуализация архитектуры" Style="{StaticResource ModernGroupBoxStyle}">
+                <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+                    <Canvas x:Name="cnvArchitecture" Style="{StaticResource ArchitectureCanvasStyle}"  Width="5000" Height="300">
+                      
+                    </Canvas>
+                </ScrollViewer>
+            </GroupBox>
+
+           
+            <GroupBox Grid.Row="1" Header="📈 Графики обучения" Style="{StaticResource ModernGroupBoxStyle}">
+                <TabControl Style="{StaticResource ModernTabControlStyle}">
+                    <TabItem Header="Точность и потери" Style="{StaticResource ModernTabItemStyle}">
+                        <Canvas x:Name="cnvTrainingGraph" Style="{StaticResource ArchitectureCanvasStyle}" 
+                            />
+                    </TabItem>
+                    <TabItem Header="Метрики эффективности" Style="{StaticResource ModernTabItemStyle}">
+                        <Canvas x:Name="cnvMetricsGraph" Style="{StaticResource ArchitectureCanvasStyle}" 
+                          />
+                    </TabItem>
+                </TabControl>
+            </GroupBox>
+        </Grid>
+
+        <!-- Правая панель - История и результаты -->
+        <Grid Grid.Column="4" Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="300"/>
+            </Grid.RowDefinitions>
+
+            <!-- История архитектур -->
+            <GroupBox Grid.Row="0" Header="📋 История архитектур" Style="{StaticResource ModernGroupBoxStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ListBox x:Name="lbArchitectures" SelectionChanged="lbArchitectures_SelectionChanged" Style="{StaticResource ModernListBoxStyle}"
+                         ItemContainerStyle="{StaticResource ModernListBoxItemStyle}"
+                         ItemTemplate="{StaticResource ArchitectureItemTemplate}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                        <Button x:Name="btnSortByAccuracy" Click="btnSortByAccuracy_Click" Content="📊 По точности" 
+                            Style="{StaticResource ModernButtonStyle}" Width="150"/>
+                        <Button x:Name="btnSortByEfficiency" Content="⚡ По эффективности" 
+                            Style="{StaticResource ModernButtonStyle}" Click="btnSortByEfficiency_Click" Width="150"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+
+            <!-- Детали архитектуры -->
+            <GroupBox Grid.Row="1" Header="Детали архитектуры" Style="{StaticResource ModernGroupBoxStyle}" Margin="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock x:Name="tbArchitectureName" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Общая информация:" FontWeight="Bold" Margin="0,10,0,5"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock x:Name="tbTotalLayers" Text="Слоев: -"/>
+                                <TextBlock x:Name="tbTotalParameters" Text="Параметров: -"/>
+                                <TextBlock x:Name="tbTrainingTime" Text="Время обучения: -"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock x:Name="tbAccuracy" Text="Точность: -"/>
+                                <TextBlock x:Name="tbInferenceTime" Text="Время инференса: -"/>
+                                <TextBlock x:Name="tbFitness" Text="Фитнес: -"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Слои:" FontWeight="Bold" Margin="0,15,0,5"/>
+                        <ListBox x:Name="lbLayers" Height="120" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Description}" FontSize="10" Margin="2"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock Text="Статистика поиска:" FontWeight="Bold" Margin="0,15,0,5"/>
+                        <StackPanel>
+                            <TextBlock x:Name="tbSearchTime" Text="Время поиска: -"/>
+                            <TextBlock x:Name="tbArchitecturesEvaluated" Text="Оценено архитектур: -"/>
+                            <TextBlock x:Name="tbBestGeneration" Text="Лучшее поколение: -"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Window>

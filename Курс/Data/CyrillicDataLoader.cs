@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
 using SixLabors.ImageSharp;
+using Курс.Core.Training;
 
-namespace Курс
+namespace Курс.Data
 {
     public class CyrillicDataLoader
     {
@@ -27,7 +28,7 @@ namespace Курс
 
         public PrecomputedBatches PrecomputeBatches(int batchSize, Device device = null)
         {
-            device = device ?? torch.CPU;
+            device = device ?? CPU;
             var batches = new PrecomputedBatches();
 
             Console.WriteLine($"ПРЕДВАРИТЕЛЬНОЕ СОЗДАНИЕ БАТЧЕЙ...");
@@ -65,14 +66,14 @@ namespace Курс
                 {
                     var image = transformer.Transform(sample.path, device);
                     image = transformer.Normalize(image);
-                    var label = torch.tensor(sample.label, torch.int64).to(device);
+                    var label = tensor(sample.label, int64).to(device);
 
                     images.Add(image);
                     labels.Add(label);
                 }
 
-                var batchImages = torch.stack(images.ToArray());
-                var batchLabels = torch.stack(labels.ToArray());
+                var batchImages = stack(images.ToArray());
+                var batchLabels = stack(labels.ToArray());
 
                 batches.Add(new PrecomputedBatch(batchImages, batchLabels));
 

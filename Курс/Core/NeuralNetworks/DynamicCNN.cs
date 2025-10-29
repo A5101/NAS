@@ -7,20 +7,21 @@ using static TorchSharp.torch.nn;
 using static TorchSharp.torch;
 using TorchSharp.Modules;
 using TorchSharp;
+using Курс.Core.Architecture;
 
-namespace Курс
+namespace Курс.Core.NeuralNetworks
 {
     public class DynamicCNN : Module<Tensor, Tensor>
     {
         private Sequential _layers;
-        private Architecture _architecture;
+        private ConcreteArchitecture _architecture;
 
-        public DynamicCNN(Architecture architecture, int inputChannels = 1,
+        public DynamicCNN(ConcreteArchitecture architecture, int inputChannels = 1,
                          int inputHeight = 64, int inputWidth = 64, Device device = null)
             : base("DynamicCNN")
         {
             _architecture = architecture;
-            device = device ?? (torch.cuda.is_available() ? CUDA : CPU);
+            device = device ?? (cuda.is_available() ? CUDA : CPU);
 
             var modules = BuildModules(inputChannels, inputHeight, inputWidth);
             _layers = Sequential(modules.ToArray());
@@ -36,17 +37,17 @@ namespace Курс
         // Добавьте инициализацию весов в DynamicCNN
         private void InitializeWeights()
         {
-            foreach (var module in this.modules())
+            foreach (var module in modules())
             {
                 switch (module)
                 {
                     case Conv2d conv:
-                        nn.init.kaiming_uniform_(conv.weight);
-                        nn.init.constant_(conv.bias, 0);
+                        init.kaiming_uniform_(conv.weight);
+                        init.constant_(conv.bias, 0);
                         break;
                     case Linear linear:
-                        nn.init.xavier_uniform_(linear.weight);
-                        nn.init.constant_(linear.bias, 0);
+                        init.xavier_uniform_(linear.weight);
+                        init.constant_(linear.bias, 0);
                         break;
                 }
             }
@@ -167,15 +168,15 @@ namespace Курс
             {
                 Console.WriteLine($"\nТЕСТ ПРЯМОГО ПРОХОДА:");
                 Console.WriteLine($"   Батч: {batchSize}x{inputChannels}x{inputHeight}x{inputWidth}");
-                Console.WriteLine($"   Устройство модели: {this.parameters().First().device}");
+                Console.WriteLine($"   Устройство модели: {parameters().First().device}");
 
                 // СОЗДАЕМ ТЕНЗОР НА ТОМ ЖЕ УСТРОЙСТВЕ, ЧТО И МОДЕЛЬ
-                var modelDevice = this.parameters().First().device;
-                var input = torch.randn(new long[] { batchSize, inputChannels, inputHeight, inputWidth }).to(modelDevice);
+                var modelDevice = parameters().First().device;
+                var input = randn(new long[] { batchSize, inputChannels, inputHeight, inputWidth }).to(modelDevice);
 
                 Console.WriteLine($"   Устройство input: {input.device}");
 
-                var output = this.forward(input);
+                var output = forward(input);
 
                 Console.WriteLine($"Вход:  {string.Join("x", input.shape)}");
                 Console.WriteLine($"Выход: {string.Join("x", output.shape)}");

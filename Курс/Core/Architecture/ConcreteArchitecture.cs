@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Курс
+namespace Курс.Core.Architecture
 {
-    public class Architecture
+    public class ConcreteArchitecture
     {
-        public List<Layer> Layers { get; private set; }
+        public List<Layer> Layers { get; set; }
         public string Name { get; set; }
         public double Accuracy { get; set; }
         public double TrainingTime { get; set; }
 
-        public Architecture(string name = "")
+        public ConcreteArchitecture(string name = "")
         {
             Layers = new List<Layer>();
             Name = name;
@@ -53,9 +53,9 @@ namespace Курс
             }
         }
 
-        public Architecture Clone()
+        public ConcreteArchitecture Clone()
         {
-            var cloned = new Architecture(Name + "_clone");
+            var cloned = new ConcreteArchitecture(Name + "_clone");
             foreach (var layer in Layers)
             {
                 cloned.AddLayer(layer.Clone());

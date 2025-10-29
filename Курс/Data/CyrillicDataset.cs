@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Курс
+namespace Курс.Data
 {
     public class CyrillicDataset
     {
@@ -63,9 +63,9 @@ namespace Курс
                 int classLabel = ClassToLabel[className];
 
                 var imageFiles = Directory.GetFiles(classDir)
-                    .Where(file => IsImageFile(file))
+                    .Where(IsImageFile)
                     .Select(file => (file, classLabel))
-                    .Take(50)
+                    .Take(10)
                     .ToList();
 
                 // Перемешиваем изображения внутри класса
