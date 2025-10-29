@@ -49,13 +49,13 @@ namespace Курс.NAS.Generators
             {
                 throw new InvalidOperationException("Сгенерированная архитектура невалидна");
             }
-
+            architecture.Name = $"RandomArch_{architecture.Layers.Count}L";
             return architecture;
         }
 
         private void GenerateConvolutionalLayers(ConcreteArchitecture architecture, int numPairs)
         {
-            int size = 64;
+            int size = _imageSize;
 
             int[] filters = { 1, 2, 4, 8, 16 };
 
@@ -70,7 +70,7 @@ namespace Курс.NAS.Generators
                 // Пуллинг слой
                 var poolLayer = CreatePoolLayer($"pool_{i + 1}");
                 size /= poolLayer.PoolSize;
-                if (size < 8)
+                if (size < 4)
                     return;
 
                 architecture.AddLayer(convLayer);

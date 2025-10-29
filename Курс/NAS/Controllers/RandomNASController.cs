@@ -20,6 +20,7 @@ namespace Курс.NAS.Controllers
         private readonly ModelTrainer _trainer;
         private readonly Device _device;
         private List<ArchitectureResult> _results;
+        private HashSet<string> _testedArchitectureHashes;
 
         public RandomNASController(int imageSize = 64, Device device = null, int? seed = null)
         {
@@ -27,6 +28,7 @@ namespace Курс.NAS.Controllers
             _trainer = new ModelTrainer(device);
             _device = device ?? (cuda.is_available() ? CUDA : CPU);
             _results = new List<ArchitectureResult>();
+            _testedArchitectureHashes = new HashSet<string>();
         }
 
         public class ArchitectureResult
@@ -133,8 +135,31 @@ namespace Курс.NAS.Controllers
 
                 try
                 {
-                    // Генерация случайной архитектуры
-                    var architecture = _generator.GenerateRandomArchitecture(minLayers, maxLayers, dataLoader.Dataset.NumClasses);
+                    // Генерация случайной архитектуры с проверкой уникальности
+                    ConcreteArchitecture architecture;
+                    bool isUnique;
+                    int attempts = 0;
+                    const int maxAttempts = 50; // Максимальное количество попыток генерации уникальной архитектуры
+
+                    do
+                    {
+                        architecture = _generator.GenerateRandomArchitecture(minLayers, maxLayers, dataLoader.Dataset.NumClasses);
+                        isUnique = !IsArchitectureAlreadyTested(architecture);
+                        attempts++;
+
+                        if (attempts >= maxAttempts)
+                        {
+                            Console.WriteLine($"Достигнут лимит попыток генерации уникальной архитектуры ({maxAttempts})");
+                            break;
+                        }
+                    }
+                    while (!isUnique && attempts < maxAttempts);
+
+                    if (!isUnique)
+                    {
+                        Console.WriteLine($"Пропуск дубликата архитектуры: {architecture.Name}");
+                        continue; // Переходим к следующей итерации
+                    }
 
                     Console.WriteLine(architecture.GetSummary());
 
@@ -153,8 +178,10 @@ namespace Курс.NAS.Controllers
                     var trainingTime = (DateTime.Now - startTime).TotalSeconds;
                     result.Accuracy = accuracy;
                     result.TrainingTime = trainingTime;
-                 
-                    
+
+                    // Добавляем в историю проверенных архитектур
+                    AddArchitectureToTested(architecture);
+
                     progress?.Report(result);
                     _results.Add(result);
 
@@ -165,7 +192,7 @@ namespace Курс.NAS.Controllers
                         Console.WriteLine($"НОВЫЙ ЛУЧШИЙ РЕЗУЛЬТАТ: {accuracy:F2}%");
                     }
 
-                    Console.WriteLine($"\nИТОГ ТРИАЛА: {accuracy:F2}% за {trainingTime:F1}с");
+                    Console.WriteLine($"\nИТОГ ТРИАЛА {trial + 1}: {accuracy:F2}% за {trainingTime:F1}с (уникальная архитектура)");
 
                 }
                 catch (Exception ex)
@@ -193,6 +220,98 @@ namespace Курс.NAS.Controllers
                 Console.WriteLine(bestResult.Architecture.GetSummary());
             }
         }
+
+        private bool IsArchitectureAlreadyTested(ConcreteArchitecture architecture)
+        {
+            string architectureHash = CalculateArchitectureSignature(architecture);
+            return _testedArchitectureHashes.Contains(architectureHash);
+        }
+
+        private void AddArchitectureToTested(ConcreteArchitecture architecture)
+        {
+            string architectureHash = CalculateArchitectureSignature(architecture);
+            _testedArchitectureHashes.Add(architectureHash);
+        }
+
+        private string CalculateArchitectureHash(ConcreteArchitecture architecture)
+        {
+            var sb = new StringBuilder();
+
+            // Базовая информация
+            sb.Append(architecture.Layers.Count);
+            sb.Append("|");
+
+            // Информация о каждом слое
+            foreach (var layer in architecture.Layers)
+            {
+                sb.Append(layer.Type);
+                sb.Append("|");
+
+                switch (layer)
+                {
+                    case ConvLayer conv:
+                        sb.Append(conv.Filters);
+                        sb.Append("|");
+                        sb.Append(conv.KernelSize);
+                        sb.Append("|");
+                        sb.Append(conv.Activation);
+                        sb.Append("|");
+                        break;
+
+                    case PoolingLayer pool:
+                        sb.Append(pool.PoolType);
+                        sb.Append("|");
+                        sb.Append(pool.PoolSize);
+                        sb.Append("|");
+                        break;
+
+                    case FullyConnectedLayer fc:
+                        sb.Append(fc.Units);
+                        sb.Append("|");
+                        sb.Append(fc.Activation);
+                        sb.Append("|");
+                        sb.Append(fc.DropoutRate.ToString("F2"));
+                        sb.Append("|");
+                        break;
+
+                    case OutputLayer output:
+                        sb.Append(output.NumClasses);
+                        sb.Append("|");
+                        break;
+
+                    case CustomLayer custom:
+                        sb.Append(custom.Type);
+                        sb.Append("|");
+                        break;
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private string CalculateArchitectureSignature(ConcreteArchitecture architecture)
+        {
+            var signature = new List<string>
+        {
+            $"Layers:{architecture.Layers.Count}"
+        };
+
+            foreach (var layer in architecture.Layers)
+            {
+                string layerSignature = layer switch
+                {
+                    ConvLayer conv => $"CONV[{conv.Filters},{conv.KernelSize},{conv.Activation}]",
+                    PoolingLayer pool => $"POOL[{pool.PoolType},{pool.PoolSize}]",
+                    FullyConnectedLayer fc => $"DENSE[{fc.Units},{fc.Activation}]",
+                    OutputLayer output => $"OUTPUT[{output.NumClasses}]",
+                    CustomLayer custom => $"CUSTOM[{custom.Type}]",
+                    _ => $"UNKNOWN[{layer.GetType().Name}]"
+                };
+                signature.Add(layerSignature);
+            }
+
+            return string.Join("|", signature);
+        }
     }
 
     public class TrainingEpoch
@@ -204,8 +323,6 @@ namespace Курс.NAS.Controllers
         public double ValAccuracy { get; set; }
         public double LearningRate { get; set; }
         public DateTime Timestamp { get; set; }
-
-        // Вычисляемые свойства
         public double LossDifference => TrainLoss - ValLoss;
         public double AccuracyDifference => ValAccuracy - TrainAccuracy;
         public bool IsOverfitting => LossDifference > 0.1 && AccuracyDifference < -2.0;

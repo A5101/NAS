@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
     <PackageReference Include="TorchSharp" Version="0.105.1" />
-    <PackageReference Include="TorchSharp-cpu" Version="0.105.1" />
+    <PackageReference Include="TorchSharp-cuda-windows" Version="0.105.1" />
   </ItemGroup>
 
 </Project>

@@ -278,20 +278,20 @@ namespace Курс.NAS.Controllers
             switch (mutationType)
             {
                 case 0: // Добавление слоя
-                    if (childArch.Layers.Count < _config.MaxLayers)
-                    {
-                        var insertPos = _random.Next(1, childArch.Layers.Count - 1);
-                        var newLayer = GenerateRandomLayer("conv");
-                        childArch.Layers.Insert(insertPos, newLayer);
-                    }
+                    //if (childArch.Layers.Count < _config.MaxLayers)
+                    //{
+                    //    var insertPos = _random.Next(1, childArch.Layers.Count - 1);
+                    //    var newLayer = GenerateRandomLayer("conv");
+                    //    childArch.Layers.Insert(insertPos, newLayer);
+                    //}
                     break;
 
                 case 1: // Удаление слоя
-                    if (childArch.Layers.Count > _config.MinLayers)
-                    {
-                        var removePos = _random.Next(1, childArch.Layers.Count - 2); // Не удаляем первый и последний слои
-                        childArch.Layers.RemoveAt(removePos);
-                    }
+                    //if (childArch.Layers.Count > _config.MinLayers)
+                    //{
+                    //    var removePos = _random.Next(1, childArch.Layers.Count - 2); // Не удаляем первый и последний слои
+                    //    childArch.Layers.RemoveAt(removePos);
+                    //}
                     break;
 
                 case 2: // Изменение параметров

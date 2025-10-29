@@ -65,7 +65,7 @@ namespace Курс.Data
                 var imageFiles = Directory.GetFiles(classDir)
                     .Where(IsImageFile)
                     .Select(file => (file, classLabel))
-                    .Take(10)
+                    //.Take(50)
                     .ToList();
 
                 // Перемешиваем изображения внутри класса

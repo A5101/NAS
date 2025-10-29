@@ -51,7 +51,7 @@ namespace NASDemo
             lbLayers.ItemsSource = CurrentLayers;
 
             // Инициализация контроллеров
-            var device = TorchSharp.torch.CPU;
+            var device = cuda.is_available() ? CUDA : CPU;
             _geneticController = new GeneticNASController(imageSize: 64, device: device);
             _randomController = new RandomNASController(imageSize: 64, device: device);
 
@@ -553,14 +553,12 @@ namespace NASDemo
                          Brushes.LimeGreen, "Val Accuracy", margin, canvasWidth, canvasHeight,
                          0, history.Count, minAccuracy, maxAccuracy);
 
-            // Рисуем линии потерь (на отдельной шкале справа)
-            double lossCanvasWidth = canvasWidth * 0.8; // Смещаем для второй оси
             DrawLineGraph(cnvTrainingGraph, history, e => e.TrainLoss,
-                         Brushes.OrangeRed, "Train Loss", margin, lossCanvasWidth, canvasHeight,
+                         Brushes.OrangeRed, "Train Loss", margin, canvasWidth, canvasHeight,
                          0, history.Count, minLoss, maxLoss);
 
             DrawLineGraph(cnvTrainingGraph, history, e => e.ValLoss,
-                         Brushes.Purple, "Val Loss", margin, lossCanvasWidth, canvasHeight,
+                         Brushes.Purple, "Val Loss", margin, canvasWidth, canvasHeight,
                          0, history.Count, minLoss, maxLoss);
 
             // Добавляем легенду
@@ -618,7 +616,7 @@ namespace NASDemo
             DrawLegend(cnvMetricsGraph, new[] { ("Overfitting Indicator", Brushes.Red), ("Learning Speed", Brushes.Blue), ("Generalization Gap", Brushes.Green) }, margin, canvasWidth);
 
             // Добавляем анализ обучения
-           // DrawTrainingAnalysis(cnvMetricsGraph, history, margin, canvasWidth, canvasHeight);
+            // DrawTrainingAnalysis(cnvMetricsGraph, history, margin, canvasWidth, canvasHeight);
         }
 
         private double CalculateLearningSpeed(List<TrainingEpoch> history, int epoch, int window = 5)

@@ -28,7 +28,7 @@ namespace Курс.Core.Training
         {
             var optimizer = optim.Adam(model.parameters(), lr: 0.001);
             var criterion = nn.CrossEntropyLoss();
-            var scheduler = optim.lr_scheduler.StepLR(optimizer, step_size: 10, gamma: 0.1);
+            //var scheduler = optim.lr_scheduler.StepLR(optimizer, step_size: 10, gamma: 0.1);
 
             double bestAccuracy = 0.0;
             int epochsWithoutImprovement = 0;
@@ -78,7 +78,7 @@ namespace Курс.Core.Training
                 }
 
                 // Обновление learning rate
-                scheduler.step();
+                //scheduler.step();
                 var currentLR = GetCurrentLearningRate(optimizer);
 
                 // Расчет средних значений
