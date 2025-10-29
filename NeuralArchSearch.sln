@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NAS", "Курс\NAS.csproj", "{E4A9517E-003B-4C6F-841A-34920D3E84F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NAS", "NAS\NAS.csproj", "{E4A9517E-003B-4C6F-841A-34920D3E84F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NASDemo", "NASDemo\NASDemo.csproj", "{76E3F8D5-CFE0-4E57-AE3C-A1652CB30B39}"
 EndProject
