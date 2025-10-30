@@ -9,7 +9,6 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <!-- Цветовая палитра -->
         <Color x:Key="PrimaryColor">#FF2C3E50</Color>
         <Color x:Key="SecondaryColor">#FF3498DB</Color>
         <Color x:Key="AccentColor">#FF1ABC9C</Color>
@@ -18,7 +17,6 @@
         <Color x:Key="LightGrayColor">#FFECF0F1</Color>
         <Color x:Key="DarkGrayColor">#FF34495E</Color>
 
-        <!-- Кисти -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
         <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
         <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
@@ -27,7 +25,6 @@
         <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGrayColor}"/>
         <SolidColorBrush x:Key="DarkGrayBrush" Color="{StaticResource DarkGrayColor}"/>
 
-        <!-- Стили для GroupBox -->
         <Style x:Key="ModernGroupBoxStyle" TargetType="GroupBox">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="12"/>
@@ -44,7 +41,6 @@
             </Style.Resources>
         </Style>
 
-        <!-- Стили для кнопок -->
         <Style x:Key="ModernButtonStyle" TargetType="Button">
             <Setter Property="Margin" Value="6"/>
             <Setter Property="Padding" Value="12,6"/>
@@ -101,7 +97,6 @@
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
         </Style>
 
-        <!-- Стили для TextBox -->
         <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
             <Setter Property="Margin" Value="0,4,0,8"/>
             <Setter Property="Padding" Value="8,6"/>
@@ -133,7 +128,6 @@
             </Setter>
         </Style>
 
-        <!-- Стили для ComboBox -->
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Margin" Value="0,4,0,8"/>
             <Setter Property="Padding" Value="8,6"/>
@@ -144,7 +138,6 @@
             <Setter Property="FontSize" Value="12"/>
         </Style>
 
-        <!-- Стили для ListBox -->
         <Style x:Key="ModernListBoxStyle" TargetType="ListBox">
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#FFBDC3C7"/>
@@ -185,7 +178,6 @@
             </Setter>
         </Style>
 
-        <!-- Стили для ProgressBar -->
         <Style x:Key="ModernProgressBarStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="20"/>
             <Setter Property="Margin" Value="0,8,0,4"/>
@@ -213,14 +205,12 @@
             </Setter>
         </Style>
 
-        <!-- Стили для Slider -->
         <Style x:Key="ModernSliderStyle" TargetType="Slider">
             <Setter Property="Margin" Value="0,4,0,8"/>
             <Setter Property="Height" Value="22"/>
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
         </Style>
 
-        <!-- Стили для TextBlock -->
         <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
@@ -235,14 +225,12 @@
             <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
 
-        <!-- Стили для CheckBox -->
         <Style x:Key="ModernCheckBoxStyle" TargetType="CheckBox">
             <Setter Property="Margin" Value="0,8,0,4"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
             <Setter Property="FontSize" Value="11"/>
         </Style>
 
-        <!-- Стили для TabControl -->
         <Style x:Key="ModernTabControlStyle" TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -288,12 +276,10 @@
             </Setter>
         </Style>
 
-        <!-- Стили для Canvas (визуализация архитектуры) -->
         <Style x:Key="ArchitectureCanvasStyle" TargetType="Canvas">
             <Setter Property="Background" Value="White"/>
         </Style>
 
-        <!-- DataTemplate для архитектур -->
         <DataTemplate x:Key="ArchitectureItemTemplate">
             <Border BorderBrush="#FFBDC3C7" 
             BorderThickness="1" 
@@ -344,11 +330,8 @@
             <ColumnDefinition Width="400"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Левая панель - Управление и конфигурация -->
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Background="White">
             <StackPanel Margin="10">
-
-                <!-- Настройки поиска -->
                 <GroupBox Header="🎯 Настройки NAS" Style="{StaticResource ModernGroupBoxStyle}">
                     <StackPanel>
                         <TextBlock Text="Алгоритм поиска:" Style="{StaticResource HeaderTextStyle}"/>
@@ -369,7 +352,6 @@
                     </StackPanel>
                 </GroupBox>
 
-                <!-- Ограничения архитектуры -->
                 <GroupBox Header="🏗️ Ограничения архитектуры" Style="{StaticResource ModernGroupBoxStyle}">
                     <StackPanel>
                         <Grid>
@@ -410,7 +392,6 @@
                     </StackPanel>
                 </GroupBox>
 
-                <!-- Кнопки управления -->
                 <GroupBox Header="⚙️ Управление" Style="{StaticResource ModernGroupBoxStyle}">
                     <StackPanel>
                         <Button x:Name="btnStartSearch" Click="btnStartSearch_Click" Content="🚀 Запуск поиска" 
@@ -431,18 +412,15 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Разделители -->
         <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{StaticResource PrimaryBrush}"/>
         <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" Background="{StaticResource PrimaryBrush}"/>
 
-        <!-- Центральная панель - Визуализация архитектуры -->
         <Grid Grid.Column="2" Margin="5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Canvas для визуализации архитектуры -->
             <GroupBox Grid.Row="0" Header="📊 Визуализация архитектуры" Style="{StaticResource ModernGroupBoxStyle}">
                 <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
                     <Canvas x:Name="cnvArchitecture" Style="{StaticResource ArchitectureCanvasStyle}"  Width="5000" Height="300">
@@ -466,14 +444,12 @@
             </GroupBox>
         </Grid>
 
-        <!-- Правая панель - История и результаты -->
         <Grid Grid.Column="4" Margin="5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="300"/>
             </Grid.RowDefinitions>
 
-            <!-- История архитектур -->
             <GroupBox Grid.Row="0" Header="📋 История архитектур" Style="{StaticResource ModernGroupBoxStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -495,7 +471,6 @@
                 </Grid>
             </GroupBox>
 
-            <!-- Детали архитектуры -->
             <GroupBox Grid.Row="1" Header="Детали архитектуры" Style="{StaticResource ModernGroupBoxStyle}" Margin="5">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>

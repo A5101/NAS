@@ -1,16 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Configurations>Debug;Release;Debug-CPU;Debug-CUDA</Configurations>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
-    <PackageReference Include="TorchSharp" Version="0.105.1" />
-    <PackageReference Include="TorchSharp-cuda-windows" Version="0.105.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+		<PackageReference Include="TorchSharp" Version="0.105.1" />
+	</ItemGroup>
+
+	<Choose>
+		<When Condition="'$(Configuration)' == 'Debug-CPU' Or '$(Configuration)' == 'Release'">
+			<ItemGroup>
+				<PackageReference Include="TorchSharp-cpu" Version="0.105.1" />
+			</ItemGroup>
+		</When>
+
+		<When Condition="'$(Configuration)' == 'Debug-CUDA'">
+			<ItemGroup>
+				<PackageReference Include="TorchSharp-cuda-windows" Version="0.105.1" />
+			</ItemGroup>
+		</When>
+	</Choose>
 
 </Project>

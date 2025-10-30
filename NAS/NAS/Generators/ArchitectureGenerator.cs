@@ -26,25 +26,19 @@ namespace Курс.NAS.Generators
             if (numLayers < 3)
                 throw new ArgumentException("Минимальное количество слоев: 3 (conv + pool + dense)");
 
-            // Вычисляем количество полносвязных слоев
             int numDenseLayers = Random.Shared.Next(1, (int)Math.Floor(numLayers / 3.0));
-            int numConvPoolPairs = (numLayers - numDenseLayers) / 2; // -1 для выходного слоя
+            int numConvPoolPairs = (numLayers - numDenseLayers) / 2;
 
             Console.WriteLine($"Генерация архитектуры: {numConvPoolPairs} conv-pool пар, {numDenseLayers} dense слоев");
 
-            // Генерируем сверточные слои с пуллингом
             GenerateConvolutionalLayers(architecture, numConvPoolPairs);
 
-            // Добавляем Flatten слой
             architecture.AddLayer(new CustomLayer("flatten", "flatten", "none"));
 
-            // Генерируем полносвязные слои
             GenerateFullyConnectedLayers(architecture, numDenseLayers);
 
-            // Добавляем выходной слой
             architecture.AddLayer(new OutputLayer("output", numClasses));
 
-            // Проверяем корректность архитектуры
             if (!architecture.Validate())
             {
                 throw new InvalidOperationException("Сгенерированная архитектура невалидна");
@@ -63,11 +57,9 @@ namespace Курс.NAS.Generators
 
             for (int i = 0; i < numPairs; i++)
             {
-                // Сверточный слой
                 var convLayer = CreateConvLayer($"conv_{i + 1}", filtersCount);
                 size = size - convLayer.KernelSize + 1;
 
-                // Пуллинг слой
                 var poolLayer = CreatePoolLayer($"pool_{i + 1}");
                 size /= poolLayer.PoolSize;
                 if (size < 4)
@@ -76,7 +68,6 @@ namespace Курс.NAS.Generators
                 architecture.AddLayer(convLayer);
                 architecture.AddLayer(poolLayer);
 
-                // Увеличиваем фильтры для следующего сверточного слоя 
                 filtersCount = GetNextFilters(filtersCount, i);
             }
         }
@@ -107,7 +98,6 @@ namespace Курс.NAS.Generators
         {
             if (numDenseLayers <= 0) return;
 
-            // Вычисляем размер входного вектора для первого dense слоя
             long inputUnits = CalculateFlattenSize(architecture);
 
             Console.WriteLine($"   Размер flatten: {inputUnits} нейронов");
@@ -116,7 +106,7 @@ namespace Курс.NAS.Generators
             {
                 var units = CalculateDenseUnits(inputUnits, i, numDenseLayers);
                 var dropout = CalculateDropoutRate(i, numDenseLayers);
-                var activation = i == numDenseLayers - 1 ? "none" : "relu"; // Последний слой без активации
+                var activation = i == numDenseLayers - 1 ? "none" : "relu"; 
 
                 var denseLayer = new FullyConnectedLayer(
                     $"dense_{i + 1}",
@@ -127,18 +117,16 @@ namespace Курс.NAS.Generators
                 );
 
                 architecture.AddLayer(denseLayer);
-                inputUnits = units; // Для следующего слоя
+                inputUnits = units; 
 
-                Console.WriteLine($"   🧠 Dense #{i + 1}: {units} нейронов, dropout: {dropout:F2}");
+                Console.WriteLine($"   Dense #{i + 1}: {units} нейронов, dropout: {dropout:F2}");
             }
         }
 
         private long CalculateFlattenSize(ConcreteArchitecture architecture)
         {
-            // Вычисляем финальный размер после всех сверточных слоев
             var finalSize = architecture.CalculateFinalSize(1, _imageSize, _imageSize);
 
-            // Размер flatten = channels * height * width
             long flattenSize = finalSize.channels * finalSize.height * finalSize.width;
 
             return flattenSize;
@@ -148,15 +136,12 @@ namespace Курс.NAS.Generators
         {
             if (denseIndex == 0)
             {
-                // Первый dense слой - берем минимум между inputUnits и 1024
                 return Math.Min(inputUnits, 256);
             }
 
-            // Уменьшаем количество нейронов с каждым слоем
             double reductionFactor = (totalDenseLayers - denseIndex) / (double)totalDenseLayers;
             long units = (long)(inputUnits * reductionFactor);
 
-            // Гарантируем минимальный размер
             return Math.Max(units, 32);
         }
 
@@ -168,7 +153,6 @@ namespace Курс.NAS.Generators
             return Math.Min(baseRate + denseIndex * increment, 0.5);
         }
 
-        // Метод для генерации случайной архитектуры в заданном диапазоне слоев
         public ConcreteArchitecture GenerateRandomArchitecture(int minLayers = 4, int maxLayers = 10, int numClasses = 33)
         {
             int numLayers = _random.Next(minLayers, maxLayers + 1);

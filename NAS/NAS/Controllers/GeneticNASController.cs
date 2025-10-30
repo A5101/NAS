@@ -66,7 +66,6 @@ namespace Курс.NAS.Controllers
             Console.WriteLine($"   Elite: {_config.EliteRatio * 100}%, Tournament: {_config.TournamentSize}");
             Console.WriteLine("=".PadRight(70, '='));
 
-            // 1. Инициализация популяции
             InitializePopulation(dataLoader.Dataset.NumClasses);
 
             ArchitectureIndividual bestIndividual = null;
@@ -76,10 +75,8 @@ namespace Курс.NAS.Controllers
             {
                 Console.WriteLine($"\nПОКОЛЕНИЕ {generation + 1}/{_config.Generations}");
 
-                // 2. Оценка приспособленности
                 EvaluatePopulation(batches, generation, imageSize);
 
-                // 3. Находим лучшую особь
                 var currentBest = _population.OrderByDescending(ind => ind.Fitness).First();
                 progress?.Report(currentBest);
                 if (bestIndividual == null || currentBest.Fitness > bestIndividual.Fitness)
@@ -88,17 +85,14 @@ namespace Курс.NAS.Controllers
                     Console.WriteLine($"НОВЫЙ ЛУЧШИЙ РЕЗУЛЬТАТ: {bestIndividual}");
                 }
 
-                // 4. Вывод статистики поколения
                 PrintGenerationStats(generation);
 
-                // 5. Создание нового поколения
-                if (generation < _config.Generations - 1) // Не создаем новое поколение для последней итерации
+                if (generation < _config.Generations - 1) 
                 {
                     var newPopulation = CreateNewGeneration();
                     _population = newPopulation;
                 }
 
-                // 6. Проверка критерия остановки (ранняя остановка)
                 if (ShouldEarlyStop(generation))
                 {
                     Console.WriteLine($"РАННЯЯ ОСТАНОВКА на поколении {generation + 1}");
@@ -133,7 +127,7 @@ namespace Курс.NAS.Controllers
             int evaluated = 0;
             foreach (var individual in _population)
             {
-                if (individual.Fitness > 0) continue; // Уже оценен
+                if (individual.Fitness > 0) continue; 
 
                 try
                 {
@@ -157,7 +151,7 @@ namespace Курс.NAS.Controllers
                 catch (Exception ex)
                 {
                     Console.WriteLine($"     Ошибка оценки: {ex.Message}");
-                    individual.Fitness = 0.01; // Минимальная приспособленность
+                    individual.Fitness = 0.01; 
                     individual.Accuracy = 0;
                 }
             }
@@ -165,10 +159,9 @@ namespace Курс.NAS.Controllers
 
         private double CalculateFitness(ArchitectureIndividual individual)
         {
-            // Multi-objective fitness функция
-            double accuracyScore = individual.Accuracy / 100.0; // Нормализуем к [0, 1]
+            double accuracyScore = individual.Accuracy / 100.0; 
             double complexityPenalty = 1.0 / (1.0 + Math.Log(individual.Parameters + 1) / 10.0);
-            double speedBonus = 1.0 / (1.0 + individual.TrainingTime / 60.0); // Нормализуем время
+            double speedBonus = 1.0 / (1.0 + individual.TrainingTime / 60.0);
 
             return accuracyScore * 0.7 + complexityPenalty * 0.2 + speedBonus * 0.1;
         }
@@ -177,7 +170,6 @@ namespace Курс.NAS.Controllers
         {
             var newPopulation = new List<ArchitectureIndividual>();
 
-            // 1. Элитизм - сохраняем лучших особей
             var eliteCount = (int)(_config.PopulationSize * _config.EliteRatio);
             var elites = _population.OrderByDescending(ind => ind.Fitness).Take(eliteCount).ToList();
 
@@ -195,12 +187,10 @@ namespace Курс.NAS.Controllers
                 });
             }
 
-            // 2. Скрещивание и мутация для остальной части популяции
             while (newPopulation.Count < _config.PopulationSize)
             {
                 if (_random.NextDouble() < _config.CrossoverRate && newPopulation.Count < _config.PopulationSize - 1)
                 {
-                    // Кроссовер - создаем двух потомков
                     var parent1 = TournamentSelection();
                     var parent2 = TournamentSelection();
 
@@ -212,7 +202,6 @@ namespace Курс.NAS.Controllers
                 }
                 else
                 {
-                    // Мутация
                     var parent = TournamentSelection();
                     var child = Mutate(parent);
                     newPopulation.Add(child);
@@ -233,24 +222,20 @@ namespace Курс.NAS.Controllers
             var arch1 = parent1.Architecture.Clone();
             var arch2 = parent2.Architecture.Clone();
 
-            // Одноточечный кроссовер
             var crossoverPoint = _random.Next(1, Math.Min(arch1.Layers.Count, arch2.Layers.Count) - 1);
 
             var child1Layers = new List<Layer>();
             var child2Layers = new List<Layer>();
 
-            // Первая часть от parent1, вторая от parent2
             child1Layers.AddRange(arch1.Layers.Take(crossoverPoint));
             child1Layers.AddRange(arch2.Layers.Skip(crossoverPoint));
-
-            // Первая часть от parent2, вторая от parent1  
+ 
             child2Layers.AddRange(arch2.Layers.Take(crossoverPoint));
             child2Layers.AddRange(arch1.Layers.Skip(crossoverPoint));
 
             arch1.Layers = child1Layers;
             arch2.Layers = child2Layers;
 
-            // Валидация и исправление архитектур
             ValidateAndRepairArchitecture(arch1);
             ValidateAndRepairArchitecture(arch2);
 
@@ -273,11 +258,11 @@ namespace Курс.NAS.Controllers
         private ArchitectureIndividual Mutate(ArchitectureIndividual parent)
         {
             var childArch = parent.Architecture.Clone();
-            var mutationType = _random.Next(4); // 4 типа мутации
+            var mutationType = _random.Next(4); 
 
             switch (mutationType)
             {
-                case 0: // Добавление слоя
+                case 0: 
                     //if (childArch.Layers.Count < _config.MaxLayers)
                     //{
                     //    var insertPos = _random.Next(1, childArch.Layers.Count - 1);
@@ -286,7 +271,7 @@ namespace Курс.NAS.Controllers
                     //}
                     break;
 
-                case 1: // Удаление слоя
+                case 1: 
                     //if (childArch.Layers.Count > _config.MinLayers)
                     //{
                     //    var removePos = _random.Next(1, childArch.Layers.Count - 2); // Не удаляем первый и последний слои
@@ -294,12 +279,12 @@ namespace Курс.NAS.Controllers
                     //}
                     break;
 
-                case 2: // Изменение параметров
+                case 2: 
                     var changePos = _random.Next(childArch.Layers.Count - 1);
                     MutateLayerParameters(childArch.Layers[changePos]);
                     break;
 
-                case 3: // Замена типа слоя
+                case 3:
                     var replacePos = _random.Next(1, childArch.Layers.Count - 2);
                     var newLayerType = GenerateRandomLayer("any");
                     childArch.Layers[replacePos] = newLayerType;
@@ -348,7 +333,6 @@ namespace Курс.NAS.Controllers
 
         private void ValidateAndRepairArchitecture(ConcreteArchitecture arch)
         {
-            // Убеждаемся, что есть хотя бы один сверточный и выходной слой
             if (!arch.Layers.Any(l => l.Type == "conv"))
             {
                 arch.Layers.Insert(1, GenerateRandomLayer("conv"));
@@ -356,7 +340,6 @@ namespace Курс.NAS.Controllers
 
             if (!arch.Layers.Any(l => l.Type == "output"))
             {
-                // Находим и заменяем последний dense слой на output
                 var lastDense = arch.Layers.LastOrDefault(l => l.Type == "dense");
                 if (lastDense != null)
                 {
@@ -365,7 +348,6 @@ namespace Курс.NAS.Controllers
                 }
             }
 
-            // Убеждаемся, что flatten есть перед dense слоями
             var firstDenseIndex = arch.Layers.FindIndex(l => l.Type == "dense");
             if (firstDenseIndex >= 0)
             {
@@ -395,9 +377,8 @@ namespace Курс.NAS.Controllers
 
         private bool ShouldEarlyStop(int generation)
         {
-            if (generation < 10) return false; // Минимум 10 поколений
+            if (generation < 10) return false;
 
-            // Проверяем, улучшалась ли лучшая приспособленность в последних 5 поколениях
             var recentBest = _population.Where(ind => ind.Generation >= generation - 5)
                                       .Max(ind => ind.Fitness);
             var currentBest = _population.Max(ind => ind.Fitness);
@@ -423,7 +404,6 @@ namespace Курс.NAS.Controllers
                 Console.WriteLine(bestIndividual.Architecture.GetSummary());
             }
 
-            // Вывод топ-5 архитектур
             var top5 = _population.OrderByDescending(ind => ind.Fitness).Take(5).ToList();
             Console.WriteLine($"\nТОП-5 АРХИТЕКТУР:");
             for (int i = 0; i < top5.Count; i++)

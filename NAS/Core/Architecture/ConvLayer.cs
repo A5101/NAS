@@ -35,19 +35,16 @@ namespace Курс.Core.Architecture
 
             var modules = new List<Module<Tensor, Tensor>>();
 
-            // 1. Conv2d слой
             var conv = Conv2d(inputChannels, Filters, KernelSize,
                                 stride: Stride, padding: Padding);
             modules.Add(conv);
 
-            // 2. BatchNorm (если включен)
             if (UseBatchNorm)
             {
                 var bn = BatchNorm2d(Filters);
                 modules.Add(bn);
             }
 
-            // 3. Активация
             Module<Tensor, Tensor> activationModule = Activation switch
             {
                 "relu" => ReLU(),
@@ -58,7 +55,6 @@ namespace Курс.Core.Architecture
             };
             modules.Add(activationModule);
 
-            // Создаем Sequential из всех модулей
             return Sequential(modules.ToArray());
         }
 
@@ -70,7 +66,7 @@ namespace Курс.Core.Architecture
                 "leaky_relu" => functional.leaky_relu(x, 0.1),
                 "sigmoid" => sigmoid(x),
                 "tanh" => tanh(x),
-                _ => functional.relu(x) // По умолчанию ReLU
+                _ => functional.relu(x)
             };
         }
 
@@ -84,7 +80,7 @@ namespace Курс.Core.Architecture
             if (Filters <= 0 || Filters > 1024)
                 return false;
 
-            if (KernelSize < 1 || KernelSize > 7 || KernelSize % 2 == 0) // Только нечетные размеры
+            if (KernelSize < 1 || KernelSize > 7 || KernelSize % 2 == 0)
                 return false;
 
             if (Stride < 1 || Stride > 3)

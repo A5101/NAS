@@ -38,7 +38,6 @@ namespace Курс.Core.Training
 
             for (int epoch = 0; epoch < numEpochs; epoch++)
             {
-                // ОБУЧЕНИЕ
                 model.train();
                 double trainLoss = 0.0;
                 double trainAccuracy = 0.0;
@@ -59,7 +58,6 @@ namespace Курс.Core.Training
                     loss.Dispose();
                 }
 
-                // ВАЛИДАЦИЯ
                 model.eval();
                 double valAccuracy = 0.0;
                 double valLoss = 0.0;
@@ -77,17 +75,14 @@ namespace Курс.Core.Training
                     }
                 }
 
-                // Обновление learning rate
                 //scheduler.step();
                 var currentLR = GetCurrentLearningRate(optimizer);
 
-                // Расчет средних значений
                 double avgTrainLoss = trainLoss / batches.TrainBatches.Count;
                 double avgValLoss = valLoss / batches.ValBatches.Count;
                 double avgTrainAccuracy = trainAccuracy / batches.TrainBatches.Count;
                 double avgValAccuracy = valAccuracy / batches.ValBatches.Count;
 
-                // Запись истории
                 var epochData = new TrainingEpoch
                 {
                     Epoch = epoch + 1,
@@ -100,10 +95,8 @@ namespace Курс.Core.Training
 
                 _currentTrainingHistory.Add(epochData);
 
-                // Добавление в результат если передан
                 result?.AddEpoch(epoch + 1, avgTrainLoss, avgValLoss, avgTrainAccuracy, avgValAccuracy, currentLR);
 
-                // Логика ранней остановки и обновления лучшего результата
                 if (avgValAccuracy > bestAccuracy)
                 {
                     bestAccuracy = avgValAccuracy;
@@ -115,14 +108,12 @@ namespace Курс.Core.Training
                     epochsWithoutImprovement++;
                 }
 
-                // Проверка условий остановки
                 if (avgValAccuracy >= targetAccuracy || epochsWithoutImprovement >= patience)
                 {
                     break;
                 }
             }
 
-            // Сохранение истории в результат
             if (result != null)
             {
                 result.TrainingHistory = _currentTrainingHistory;
@@ -136,7 +127,6 @@ namespace Курс.Core.Training
 
         private double GetCurrentLearningRate(Optimizer optimizer)
         {
-            // Получение текущего learning rate из оптимизатора
             try
             {
                 var paramGroup = optimizer.ParamGroups.FirstOrDefault();
@@ -156,7 +146,6 @@ namespace Курс.Core.Training
             return 100.0 * correct / total;
         }
 
-        // Метод для получения истории текущего обучения
         public List<TrainingEpoch> GetCurrentTrainingHistory()
         {
             return _currentTrainingHistory?.ToList() ?? new List<TrainingEpoch>();

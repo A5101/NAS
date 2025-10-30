@@ -11,6 +11,7 @@ using Курс.Data;
 using Курс.NAS.Generators;
 using Курс.Core.NeuralNetworks;
 using static Курс.NAS.Controllers.GeneticNASController;
+using NAS.Core.Training;
 
 namespace Курс.NAS.Controllers
 {
@@ -38,8 +39,6 @@ namespace Курс.NAS.Controllers
             public double TrainingTime { get; set; }
             public int Parameters { get; set; }
             public DateTime Timestamp { get; set; }
-
-            // Новая коллекция для хранения истории обучения
             public List<TrainingEpoch> TrainingHistory { get; set; }
 
             public ArchitectureResult()
@@ -48,7 +47,6 @@ namespace Курс.NAS.Controllers
                 Timestamp = DateTime.Now;
             }
 
-            // Метод для добавления записи об эпохе
             public void AddEpoch(int epoch, double trainLoss, double valLoss, double trainAccuracy, double valAccuracy, double learningRate)
             {
                 TrainingHistory.Add(new TrainingEpoch
@@ -63,7 +61,6 @@ namespace Курс.NAS.Controllers
                 });
             }
 
-            // Метод для получения последних N эпох
             public List<TrainingEpoch> GetRecentEpochs(int count)
             {
                 return TrainingHistory
@@ -73,7 +70,6 @@ namespace Курс.NAS.Controllers
                     .ToList();
             }
 
-            // Метод для проверки, была ли стагнация в обучении
             public bool HadTrainingPlateau(int windowSize = 10, double tolerance = 0.001)
             {
                 if (TrainingHistory.Count < windowSize) return false;
@@ -90,7 +86,6 @@ namespace Курс.NAS.Controllers
                 return Math.Abs(lastAccuracy - firstAccuracy) <= tolerance;
             }
 
-            // Метод для получения лучшей эпохи по валидационной точности
             public TrainingEpoch GetBestEpoch()
             {
                 return TrainingHistory
@@ -99,7 +94,6 @@ namespace Курс.NAS.Controllers
                     .FirstOrDefault();
             }
 
-            // Метод для вычисления скорости обучения (accuracy/epoch)
             public double GetLearningSpeed()
             {
                 if (TrainingHistory.Count < 2) return 0;
@@ -113,9 +107,6 @@ namespace Курс.NAS.Controllers
                 return epochDifference > 0 ? accuracyGain / epochDifference : 0;
             }
         }
-
-        // Новый класс для хранения данных об одной эпохе обучения
-    
 
         public ArchitectureResult Search(CyrillicDataLoader dataLoader, int numTrials = 50,
                                        int minLayers = 5, int maxLayers = 12,
@@ -135,11 +126,10 @@ namespace Курс.NAS.Controllers
 
                 try
                 {
-                    // Генерация случайной архитектуры с проверкой уникальности
                     ConcreteArchitecture architecture;
                     bool isUnique;
                     int attempts = 0;
-                    const int maxAttempts = 50; // Максимальное количество попыток генерации уникальной архитектуры
+                    const int maxAttempts = 50; 
 
                     do
                     {
@@ -158,12 +148,11 @@ namespace Курс.NAS.Controllers
                     if (!isUnique)
                     {
                         Console.WriteLine($"Пропуск дубликата архитектуры: {architecture.Name}");
-                        continue; // Переходим к следующей итерации
+                        continue; 
                     }
 
                     Console.WriteLine(architecture.GetSummary());
 
-                    // Создание модели
                     using var model = new DynamicCNN(architecture, inputChannels: 1, device: _device, inputHeight: imageSize, inputWidth: imageSize);
                     var result = new ArchitectureResult
                     {
@@ -172,20 +161,17 @@ namespace Курс.NAS.Controllers
                         Timestamp = DateTime.Now
                     };
 
-                    // Обучение и оценка
                     var startTime = DateTime.Now;
                     var accuracy = _trainer.TrainAndEvaluate(model, batches, epochsPerTrial, result);
                     var trainingTime = (DateTime.Now - startTime).TotalSeconds;
                     result.Accuracy = accuracy;
                     result.TrainingTime = trainingTime;
 
-                    // Добавляем в историю проверенных архитектур
                     AddArchitectureToTested(architecture);
 
                     progress?.Report(result);
                     _results.Add(result);
 
-                    // Обновление лучшего результата
                     if (bestResult == null || accuracy > bestResult.Accuracy)
                     {
                         bestResult = result;
@@ -237,11 +223,9 @@ namespace Курс.NAS.Controllers
         {
             var sb = new StringBuilder();
 
-            // Базовая информация
             sb.Append(architecture.Layers.Count);
             sb.Append("|");
 
-            // Информация о каждом слое
             foreach (var layer in architecture.Layers)
             {
                 sb.Append(layer.Type);
@@ -314,22 +298,5 @@ namespace Курс.NAS.Controllers
         }
     }
 
-    public class TrainingEpoch
-    {
-        public int Epoch { get; set; }
-        public double TrainLoss { get; set; }
-        public double ValLoss { get; set; }
-        public double TrainAccuracy { get; set; }
-        public double ValAccuracy { get; set; }
-        public double LearningRate { get; set; }
-        public DateTime Timestamp { get; set; }
-        public double LossDifference => TrainLoss - ValLoss;
-        public double AccuracyDifference => ValAccuracy - TrainAccuracy;
-        public bool IsOverfitting => LossDifference > 0.1 && AccuracyDifference < -2.0;
-
-        public override string ToString()
-        {
-            return $"Epoch {Epoch}: Train={TrainLoss:F4}({TrainAccuracy:F2}%), Val={ValLoss:F4}({ValAccuracy:F2}%), LR={LearningRate:E2}";
-        }
-    }
+   
 }

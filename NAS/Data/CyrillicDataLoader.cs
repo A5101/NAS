@@ -35,11 +35,9 @@ namespace Курс.Data
             Console.WriteLine($"   Batch size: {batchSize}");
             Console.WriteLine($"   Устройство: {device}");
 
-            // СОЗДАЕМ TRAIN БАТЧИ
             Console.WriteLine($"   Создание train батчей...");
             batches.TrainBatches = CreateBatches(_dataset.TrainSamples, _trainTransformer, batchSize, device, "Train");
 
-            // СОЗДАЕМ VAL БАТЧИ  
             Console.WriteLine($"   Создание val батчей...");
             batches.ValBatches = CreateBatches(_dataset.ValSamples, _valTransformer, batchSize, device, "Val");
 
@@ -53,7 +51,7 @@ namespace Курс.Data
                                                    int batchSize, Device device, string name)
         {
             var batches = new List<PrecomputedBatch>();
-            var shuffledSamples = samples.OrderBy(x => _random.Next()).ToList(); // Перемешиваем
+            var shuffledSamples = samples.OrderBy(x => _random.Next()).ToList();
 
             for (int i = 0; i < shuffledSamples.Count; i += batchSize)
             {
@@ -77,7 +75,6 @@ namespace Курс.Data
 
                 batches.Add(new PrecomputedBatch(batchImages, batchLabels));
 
-                // Очищаем отдельные тензоры
                 foreach (var img in images) img.Dispose();
                 foreach (var lbl in labels) lbl.Dispose();
 

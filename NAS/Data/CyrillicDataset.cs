@@ -37,7 +37,6 @@ namespace Курс.Data
             var random = seed.HasValue ? new Random(seed.Value) : new Random();
             var allSamples = new List<(string imagePath, int label)>();
 
-            // Загружаем все классы
             var classDirectories = Directory.GetDirectories(DataPath)
                 .Where(dir => !Path.GetFileName(dir).StartsWith("."))
                 .OrderBy(dir => Path.GetFileName(dir))
@@ -46,7 +45,6 @@ namespace Курс.Data
             if (classDirectories.Length == 0)
                 throw new InvalidDataException($"В папке {DataPath} не найдено подпапок с классами");
 
-            // Создаем mapping классов
             int label = 0;
             foreach (var classDir in classDirectories)
             {
@@ -56,7 +54,6 @@ namespace Курс.Data
                 label++;
             }
 
-            // Собираем все изображения
             foreach (var classDir in classDirectories)
             {
                 string className = Path.GetFileName(classDir);
@@ -68,10 +65,8 @@ namespace Курс.Data
                     //.Take(50)
                     .ToList();
 
-                // Перемешиваем изображения внутри класса
                 imageFiles = imageFiles.OrderBy(x => random.Next()).ToList();
 
-                // Разделяем на train/val внутри каждого класса
                 int trainCount = (int)(imageFiles.Count * trainRatio);
 
                 TrainSamples.AddRange(imageFiles.Take(trainCount));
@@ -80,7 +75,6 @@ namespace Курс.Data
                 Console.WriteLine($"  {className}: {imageFiles.Count} всего -> {trainCount} train, {imageFiles.Count - trainCount} val");
             }
 
-            // Перемешиваем общие выборки
             TrainSamples = TrainSamples.OrderBy(x => random.Next()).ToList();
             ValSamples = ValSamples.OrderBy(x => random.Next()).ToList();
 

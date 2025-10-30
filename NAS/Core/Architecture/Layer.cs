@@ -22,21 +22,17 @@ namespace Курс.Core.Architecture
             Activation = activation;
         }
 
-        // Абстрактные методы для создания PyTorch слоев
         public abstract Module<Tensor, Tensor> CreateModule(int inputChannels = -1, long inputUnits = -1);
         public abstract Tensor ApplyActivation(Tensor x);
         public abstract Layer Clone();
 
-        // Валидация параметров слоя
         public abstract bool Validate();
 
-        // Информация о слое
         public virtual string GetDescription()
         {
             return $"{Type} layer '{Name}'";
         }
 
-        // Вычисление выходного размера (для совместимости слоев)
         public abstract (int channels, int height, int width) CalculateOutputSize(
             int inputChannels, int inputHeight, int inputWidth);
     }

@@ -32,18 +32,15 @@ namespace Курс.Core.Architecture
 
             var modules = new List<Module<Tensor, Tensor>>();
 
-            // 1. Linear слой
             var linear = Linear(inputUnits, Units);
             modules.Add(linear);
 
-            // 2. BatchNorm (если включен)
             if (UseBatchNorm)
             {
                 var bn = BatchNorm1d(Units);
                 modules.Add(bn);
             }
 
-            // 3. Активация (если не "none")
             if (Activation != "none")
             {
                 Module<Tensor, Tensor> activationModule = Activation switch
@@ -57,7 +54,6 @@ namespace Курс.Core.Architecture
                 modules.Add(activationModule);
             }
 
-            // 4. Dropout (если включен)
             if (DropoutRate > 0.0)
             {
                 var dropout = Dropout(DropoutRate);
@@ -79,7 +75,6 @@ namespace Курс.Core.Architecture
                 _ => functional.relu(x)
             };
 
-            // Применяем dropout если нужно
             if (DropoutRate > 0.0)
             {
                 activated = functional.dropout(activated, DropoutRate, training: true);
@@ -114,7 +109,6 @@ namespace Курс.Core.Architecture
         public override (int channels, int height, int width) CalculateOutputSize(
             int inputChannels, int inputHeight, int inputWidth)
         {
-            // Полносвязный слой преобразует в 1D вектор
             return (Units, 1, 1);
         }
     }

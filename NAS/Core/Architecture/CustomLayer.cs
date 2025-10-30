@@ -45,7 +45,6 @@ namespace Курс.Core.Architecture
         {
             if (Type == "flatten")
             {
-                // Flatten преобразует в 1D вектор
                 return (inputChannels * inputHeight * inputWidth, 1, 1);
             }
 
@@ -53,7 +52,6 @@ namespace Курс.Core.Architecture
         }
     }
 
-    // Реализация Flatten модуля для TorchSharp
     public class FlattenModule : Module<Tensor, Tensor>
     {
         public FlattenModule() : base("Flatten")
@@ -63,7 +61,7 @@ namespace Курс.Core.Architecture
 
         public override Tensor forward(Tensor x)
         {
-            return x.flatten(1); // flatten начиная с dimension 1 (после batch)
+            return x.flatten(1); 
         }
     }
 }

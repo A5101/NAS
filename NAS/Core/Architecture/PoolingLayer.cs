@@ -16,7 +16,7 @@ namespace Курс.Core.Architecture
 
         public PoolingLayer(string name, string poolType = "max",
                            int poolSize = 2, int stride = 2)
-            : base(name, "pool", "none") // Pooling не имеет активации
+            : base(name, "pool", "none") 
         {
             PoolType = poolType;
             PoolSize = poolSize;
@@ -43,7 +43,7 @@ namespace Курс.Core.Architecture
 
         public override Tensor ApplyActivation(Tensor x)
         {
-            return x; // Pooling не применяет активацию
+            return x;
         }
 
         public override Layer Clone()

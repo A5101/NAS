@@ -13,7 +13,7 @@ namespace Курс.Core.Architecture
         public int NumClasses { get; private set; }
 
         public OutputLayer(string name, int numClasses)
-            : base(name, "output", "none") // Output layer обычно без активации (применяется в loss)
+            : base(name, "output", "none")
         {
             NumClasses = numClasses;
         }
@@ -21,16 +21,14 @@ namespace Курс.Core.Architecture
         public override Module<Tensor, Tensor> CreateModule(int inputChannels = -1, long inputUnits = -1)
         {
             if (inputUnits <= 0)
-                throw new ArgumentException("Для выходного слоя必须指定 inputUnits");
+                throw new ArgumentException("Для выходного слоя inputUnits");
 
-            // Output layer - просто Linear слой без активации
-            // (активация softmax обычно применяется в loss функции)
             return Linear(inputUnits, NumClasses);
         }
 
         public override Tensor ApplyActivation(Tensor x)
         {
-            return x; // Без активации - будет использоваться с CrossEntropyLoss
+            return x;
         }
 
         public override Layer Clone()

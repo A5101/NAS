@@ -34,7 +34,6 @@ namespace Курс.Core.NeuralNetworks
             Console.WriteLine($"Динамическая CNN создана: {modules.Count} модулей");
         }
 
-        // Добавьте инициализацию весов в DynamicCNN
         private void InitializeWeights()
         {
             foreach (var module in modules())
@@ -126,7 +125,6 @@ namespace Курс.Core.NeuralNetworks
                             throw new NotSupportedException($"Неизвестный тип слоя: {layer.GetType().Name}");
                     }
 
-                    // Проверяем, что размеры не стали некорректными
                     if (currentHeight <= 0 || currentWidth <= 0)
                     {
                         throw new InvalidOperationException(
@@ -148,7 +146,6 @@ namespace Курс.Core.NeuralNetworks
             return _layers.forward(x);
         }
 
-        // Метод для получения информации о модели
         public string GetModelInfo()
         {
             var parameters = this.parameters().Count();
@@ -160,7 +157,6 @@ namespace Курс.Core.NeuralNetworks
                    $"Точность: {_architecture.Accuracy:F2}%";
         }
 
-        // Метод для тестирования прямого прохода
         public void TestForwardPass(int batchSize = 1, int inputChannels = 1,
                             int inputHeight = 64, int inputWidth = 64)
         {
@@ -170,7 +166,6 @@ namespace Курс.Core.NeuralNetworks
                 Console.WriteLine($"   Батч: {batchSize}x{inputChannels}x{inputHeight}x{inputWidth}");
                 Console.WriteLine($"   Устройство модели: {parameters().First().device}");
 
-                // СОЗДАЕМ ТЕНЗОР НА ТОМ ЖЕ УСТРОЙСТВЕ, ЧТО И МОДЕЛЬ
                 var modelDevice = parameters().First().device;
                 var input = randn(new long[] { batchSize, inputChannels, inputHeight, inputWidth }).to(modelDevice);
 
@@ -182,7 +177,6 @@ namespace Курс.Core.NeuralNetworks
                 Console.WriteLine($"Выход: {string.Join("x", output.shape)}");
                 Console.WriteLine($" Min: {output.min().item<float>():F4}, Max: {output.max().item<float>():F4}");
 
-                // Очищаем память
                 input.Dispose();
                 output.Dispose();
             }

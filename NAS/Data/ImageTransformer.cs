@@ -30,13 +30,10 @@ namespace Курс.Data
 
             try
             {
-                // ЗАГРУЖАЕМ КАК RGBA И КОНВЕРТИРУЕМ В GRAYSCALE
                 using (var image = Image.Load<Rgba32>(imagePath))
                 {
-                    // Ресайз
                     image.Mutate(x => x.Resize(_targetWidth, _targetHeight));
 
-                    // КОНВЕРТИРУЕМ В GRAYSCALE С УЧЕТОМ ПРОЗРАЧНОСТИ
                     var tensor = zeros(new long[] { 1, _targetHeight, _targetWidth });
 
                     int nonZeroPixels = 0;
@@ -48,15 +45,13 @@ namespace Курс.Data
                         {
                             var pixel = image[x, y];
 
-                            // ЕСЛИ ПИКСЕЛЬ ПРОЗРАЧНЫЙ - делаем его белым (1.0) или черным (0.0)
                             if (pixel.A == 0)
                             {
-                                tensor[0, y, x] = 1.0f; // Белый фон для прозрачных пикселей
+                                tensor[0, y, x] = 1.0f;
                                 transparentPixels++;
                             }
                             else
                             {
-                                // Конвертируем цвет в grayscale
                                 var grayValue = (0.299f * pixel.R + 0.587f * pixel.G + 0.114f * pixel.B) / 255.0f;
                                 tensor[0, y, x] = grayValue;
                                 nonZeroPixels++;
@@ -78,17 +73,15 @@ namespace Курс.Data
         {
             var random = new Random();
 
-            // Случайный поворот (±10 градусов)
             if (random.NextDouble() > 0.5)
             {
-                var angle = random.NextDouble() * 20 - 10; // -10 to +10 degrees
+                var angle = random.NextDouble() * 20 - 10; 
                 context.Rotate((float)angle);
             }
 
-            // Случайное изменение яркости/контраста
             if (random.NextDouble() > 0.5)
             {
-                var brightness = (float)(random.NextDouble() * 0.4 - 0.2); // -0.2 to +0.2
+                var brightness = (float)(random.NextDouble() * 0.4 - 0.2); 
                 context.Brightness((float)(1.0 + brightness));
             }
         }
@@ -98,23 +91,19 @@ namespace Курс.Data
             var width = image.Width;
             var height = image.Height;
 
-            // Создаем тензор [1, H, W] для ЧБ
             var tensor = zeros(new long[] { 1, height, width });
 
-            // Заполняем тензор значениями пикселей [0, 1]
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     var pixel = image[x, y];
-                    tensor[0, y, x] = pixel.PackedValue / 255.0f; // Один канал для ЧБ
+                    tensor[0, y, x] = pixel.PackedValue / 255.0f; 
                 }
             }
 
             return tensor;
         }
-
-        // Нормализация для ЧБ изображений
         public Tensor Normalize(Tensor tensor)
         {
             var mean = torch.tensor(new float[] { 0.5f }).reshape(1, 1, 1).to(tensor.device);
