@@ -448,6 +448,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="300"/>
+                <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
 
             <GroupBox Grid.Row="0" Header="📋 История архитектур" Style="{StaticResource ModernGroupBoxStyle}">
@@ -465,8 +466,6 @@
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
                         <Button x:Name="btnSortByAccuracy" Click="btnSortByAccuracy_Click" Content="📊 По точности" 
                             Style="{StaticResource ModernButtonStyle}" Width="150"/>
-                        <Button x:Name="btnSaveModel" Content="Сохранить модель" 
-                            Style="{StaticResource ModernButtonStyle}" Click="btnSaveModel_Click" Width="150"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>
@@ -512,7 +511,35 @@
                     </StackPanel>
                 </ScrollViewer>
             </GroupBox>
+
+            <GroupBox Grid.Row="2" Header="🔍 Тестирование модели"  Style="{StaticResource ModernGroupBoxStyle}" Margin="10">
+                <StackPanel>
+                    <Button x:Name="btnDrawAndRecognize" Content="✏️ Нарисовать и распознать" 
+                Style="{StaticResource AccentButtonStyle}"
+                Click="btnDrawAndRecognize_Click"/>
+
+                    <Border x:Name="recognitionResultBorder" Margin="0,10,0,0" Padding="10" 
+                BorderBrush="#FF27AE60" BorderThickness="1" 
+                Background="#FFF0F8FF" Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock x:Name="tbRecognitionResult" FontSize="12" FontWeight="Bold" 
+                           Text="Результат распознавания:"/>
+                            <TextBlock x:Name="tbRecognitionConfidence" FontSize="11" 
+                           Foreground="DarkGreen" Margin="0,2,0,0"/>
+                            <ItemsControl x:Name="icTopPredictions" Margin="0,5,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="10" Margin="0,1"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </GroupBox>
+
         </Grid>
+        
     </Grid>
 
 </Window>

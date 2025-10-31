@@ -25,11 +25,11 @@ namespace NAS.Core.Training
 
         public double TrainAndEvaluate(DynamicCNN model, PrecomputedBatches batches,
                                  int numEpochs, ArchitectureResult result = null,
-                                 int patience = 20, double targetAccuracy = 99.0)
+                                 int patience = 30, double targetAccuracy = 99.0)
         {
             var optimizer = optim.Adam(model.parameters(), lr: 0.001);
             var criterion = nn.CrossEntropyLoss();
-            //var scheduler = optim.lr_scheduler.StepLR(optimizer, step_size: 10, gamma: 0.1);
+            var scheduler = optim.lr_scheduler.StepLR(optimizer, step_size: 10, gamma: 0.1);
 
             double bestAccuracy = 0.0;
             int epochsWithoutImprovement = 0;
@@ -76,7 +76,7 @@ namespace NAS.Core.Training
                     }
                 }
 
-                //scheduler.step();
+                scheduler.step();
                 var currentLR = GetCurrentLearningRate(optimizer);
 
                 double avgTrainLoss = trainLoss / batches.TrainBatches.Count;

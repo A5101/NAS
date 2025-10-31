@@ -62,7 +62,7 @@ namespace NAS.Data
                 var imageFiles = Directory.GetFiles(classDir)
                     .Where(IsImageFile)
                     .Select(file => (file, classLabel))
-                    .Take(20)
+                    //.Take(20)
                     .ToList();
 
                 imageFiles = imageFiles.OrderBy(x => random.Next()).ToList();

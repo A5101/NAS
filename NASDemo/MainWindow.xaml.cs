@@ -20,6 +20,9 @@ using NAS.Core.Training;
 using NAS.Core.NeuralNetworks;
 using Microsoft.Win32;
 using System.IO;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using TorchSharp;
 
 namespace NASDemo
 {
@@ -906,127 +909,222 @@ namespace NASDemo
             }
         }
 
-        private void btnSaveModel_Click(object sender, RoutedEventArgs e)
+        private async void btnDrawAndRecognize_Click(object sender, RoutedEventArgs e)
         {
             if (lbArchitectures.SelectedItem is ArchitectureViewModel selected)
             {
-                try
+                var drawWindow = new DrawWindow();
+                drawWindow.Owner = this;
+
+                if (drawWindow.ShowDialog() == true && drawWindow.HasDrawing)
                 {
-                    // Создаем диалог для выбора папки сохранения
-                    var folderDialog = new OpenFolderDialog();
-
-                    if ((bool)folderDialog.ShowDialog())
+                    try
                     {
-                        string baseFileName = SanitizeFileName(selected.Name);
-                        string folderPath = folderDialog.FolderName;
+                        btnDrawAndRecognize.IsEnabled = false;
+                        btnDrawAndRecognize.Content = "⏳ Обработка...";
 
-                        // Сохраняем оба файла
-                        SaveModelAsTwoFiles(selected.CNNModel, folderPath, baseFileName);
+                        // Получаем изображение из окна рисования
+                        var bitmapSource = drawWindow.DrawnImage;
 
-                        // Показать сообщение об успехе
-                        MessageBox.Show(
-                            $"Модель '{selected.Name}' успешно сохранена!\n\n" +
-                            $"Файлы:\n" +
-                            $"• {baseFileName}.pth - веса модели\n" +
-                            $"• {baseFileName}_architecture.json - архитектура\n\n" +
-                            $"Папка: {folderPath}",
-                            "Сохранение завершено",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                        if (bitmapSource != null)
+                        {
+                            // Конвертируем в тензор и распознаем
+                            var results = await ProcessAndRecognizeImage(bitmapSource, selected.CNNModel);
+
+                            // Отображаем результаты
+                            DisplayRecognitionResults(results);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка распознавания: {ex.Message}", "Ошибка",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    finally
+                    {
+                        btnDrawAndRecognize.IsEnabled = true;
+                        btnDrawAndRecognize.Content = "✏️ Нарисовать и распознать";
                     }
                 }
-                catch (Exception ex)
+            }
+        }
+        private async Task<List<(string letter, double confidence)>> ProcessAndRecognizeImage(BitmapSource bitmapSource, DynamicCNN model)
+        {
+            return await Task.Run(() =>
+            {
+                // Конвертируем BitmapSource в тензор
+                var inputTensor = ConvertBitmapToTensor(bitmapSource);
+
+                model.eval();
+
+                using (no_grad())
                 {
-                    MessageBox.Show(
-                        $"Ошибка при сохранении модели: {ex.Message}",
-                        "Ошибка",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                    var output = model.forward(inputTensor);
+                    var probabilities = torch.nn.functional.softmax(output, dim: 1);
+                    var probArray = probabilities.cpu().data<float>().ToArray();
+
+                    var results = new List<(string, double confidence)>();
+
+                    // Получаем метки классов
+                    var classLabels = GetClassLabels();
+
+                    for (int i = 0; i < probArray.Length && i < classLabels.Count; i++)
+                    {
+                        double confidence = probArray[i] * 100.0;
+                        if (confidence > 0.1) // Показываем только вероятности > 0.1%
+                        {
+                            string letter = classLabels[i];
+                            results.Add((letter, confidence));
+                        }
+                    }
+
+                    output.Dispose();
+                    probabilities.Dispose();
+                    inputTensor.Dispose();
+
+                    return results.OrderByDescending(r => r.confidence).Take(5).ToList();
+                }
+            });
+        }
+
+        private Tensor ConvertBitmapToTensor(BitmapSource bitmapSource)
+        {
+            // Способ 1: Через массив байтов (надежнее)
+            byte[] bitmapData;
+
+            if (bitmapSource is System.Windows.Media.Imaging.BitmapImage bitmapImage)
+            {
+                // Если это BitmapImage, получаем данные из StreamSource
+                var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmapSource));
+
+                using (var stream = new System.IO.MemoryStream())
+                {
+                    encoder.Save(stream);
+                    bitmapData = stream.ToArray();
                 }
             }
             else
             {
-                MessageBox.Show(
-                    "Пожалуйста, выберите модель для сохранения",
-                    "Модель не выбрана",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                // Для других типов BitmapSource
+                bitmapData = ConvertBitmapSourceToByteArray(bitmapSource);
+            }
+
+            return ProcessImageBytesToTensor(bitmapData);
+        }
+
+        private byte[] ConvertBitmapSourceToByteArray(BitmapSource bitmapSource)
+        {
+            // Создаем копию в текущем потоке
+            var copiedBitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
+                bitmapSource.PixelWidth, bitmapSource.PixelHeight,
+                bitmapSource.DpiX, bitmapSource.DpiY,
+                PixelFormats.Pbgra32);
+
+            var drawingVisual = new DrawingVisual();
+            using (var drawingContext = drawingVisual.RenderOpen())
+            {
+                drawingContext.DrawImage(bitmapSource, new Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight));
+            }
+
+            copiedBitmap.Render(drawingVisual);
+
+            // Кодируем в PNG
+            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(copiedBitmap));
+
+            using (var stream = new System.IO.MemoryStream())
+            {
+                encoder.Save(stream);
+                return stream.ToArray();
             }
         }
 
-        private void SaveModelAsTwoFiles(CNNModel model, string folderPath, string baseFileName)
+        private Tensor ProcessImageBytesToTensor(byte[] imageBytes)
         {
-            // 1. Сохраняем веса модели в .pth файл
-            string weightsFilePath = System.IO.Path.Combine(folderPath, $"{baseFileName}.pth");
-            SaveWeightsToFile(model.ModelJSON, weightsFilePath);
-
-            // 2. Сохраняем архитектуру в .json файл
-            string architectureFilePath = System.IO.Path.Combine(folderPath, $"{baseFileName}_architecture.json");
-            SaveArchitectureToFile(model.ArchitectureJSON, architectureFilePath);
-        }
-
-        private void SaveWeightsToFile(string modelJson, string filePath)
-        {
-            // Декодируем Base64 строку и сохраняем как бинарный файл
-            byte[] modelData = Convert.FromBase64String(modelJson);
-            File.WriteAllBytes(filePath, modelData);
-            Console.WriteLine($"Веса модели сохранены: {filePath} ({modelData.Length} bytes)");
-        }
-
-        private void SaveArchitectureToFile(string architectureJson, string filePath)
-        {
-            // Парсим и переформатируем архитектуру для красивого сохранения
-            var architecture = System.Text.Json.JsonSerializer.Deserialize<object>(architectureJson);
-
-            var options = new System.Text.Json.JsonSerializerOptions
+            using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imageBytes))
             {
-                WriteIndented = true,
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
+                // Преобразуем в grayscale и ресайзим до 64x64
+                image.Mutate(x => x
+                    .Resize(64, 64)
+                    .Grayscale());
 
-            string formattedJson = System.Text.Json.JsonSerializer.Serialize(architecture, options);
-            File.WriteAllText(filePath, formattedJson);
-            Console.WriteLine($"Архитектура сохранена: {filePath}");
+                // Создаем тензор [1, 1, 64, 64]
+                var tensor = torch.zeros(new long[] { 1, 1, 64, 64 });
+
+                // Заполняем тензор значениями из изображения
+                for (int y = 0; y < 64; y++)
+                {
+                    for (int x = 0; x < 64; x++)
+                    {
+                        var pixel = image[x, y];
+                        // Инвертируем: черный = 1.0, белый = 0.0
+                        float value = 1.0f - (pixel.R / 255.0f);
+                        tensor[0, 0, y, x] = value;
+                    }
+                }
+
+                // Нормализуем как в ImageTransformer
+                var mean = torch.tensor(new float[] { 0.5f }).reshape(1, 1, 1, 1);
+                var std = torch.tensor(new float[] { 0.5f }).reshape(1, 1, 1, 1);
+
+                return (tensor - mean) / std;
+            }
         }
 
-        private string SanitizeFileName(string fileName)
+        private List<string> GetClassLabels()
         {
-            // Убираем запрещенные символы из имени файла
-            var invalidChars = System.IO.Path.GetInvalidFileNameChars();
-            return string.Concat(fileName.Where(ch => !invalidChars.Contains(ch))).Replace(" ", "_");
+            return _dataLoader?.Dataset?.LabelToClass?
+                .OrderBy(kv => kv.Key)
+                .Select(kv => kv.Value)
+                .ToList() ?? GetDefaultCyrillicLabels();
+        }
+
+        private List<string> GetDefaultCyrillicLabels()
+        {
+            // Резервный список кириллических букв (А-Я + Ё)
+            var letters = new List<string>();
+
+            // А-Е
+            for (char c = 'А'; c <= 'Е'; c++)
+                letters.Add(c.ToString());
+
+            // Ё
+            letters.Add("Ё");
+
+            // Ж-Я  
+            for (char c = 'Ж'; c <= 'Я'; c++)
+                letters.Add(c.ToString());
+
+            return letters;
+        }
+
+        private void DisplayRecognitionResults(List<(string letter, double confidence)> results)
+        {
+            if (results.Count == 0)
+            {
+                tbRecognitionResult.Text = "Буква не распознана";
+                tbRecognitionConfidence.Text = "Уверенность: < 0.1%";
+                icTopPredictions.ItemsSource = null;
+            }
+            else
+            {
+                var topResult = results.First();
+                tbRecognitionResult.Text = $"Распознано: {topResult.letter}";
+                tbRecognitionConfidence.Text = $"Уверенность: {topResult.confidence:F1}%";
+
+                // Показываем топ-5 предсказаний
+                var topPredictions = results.Select(r =>
+                    $"{r.letter}: {r.confidence:F1}%").ToList();
+                icTopPredictions.ItemsSource = topPredictions;
+            }
+
+            recognitionResultBorder.Visibility = Visibility.Visible;
         }
 
         private void btnExportResults_Click(object sender, RoutedEventArgs e)
         {
-            if (!_architecturesHistory.Any())
-            {
-                MessageBox.Show("Нет результатов для экспорта", "Информация",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
 
-            try
-            {
-                // Экспорт результатов в файл
-                var dialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Filter = "JSON files (*.json)|*.json|Text files (*.txt)|*.txt",
-                    FileName = $"NAS_Results_{DateTime.Now:yyyyMMdd_HHmmss}"
-                };
-
-                if (dialog.ShowDialog() == true)
-                {
-                    ExportResultsToFile(dialog.FileName);
-                    MessageBox.Show($"Результаты экспортированы в {dialog.FileName}", "Успех",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка экспорта: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
         private void ExportResultsToFile(string filePath)
@@ -1049,7 +1147,7 @@ namespace NASDemo
         public DateTime Timestamp { get; set; }
         public List<string> GeneticHistory { get; set; }
         public List<TrainingEpoch> TrainingHistory { get; set; }
-        public CNNModel CNNModel { get; set; }
+        public DynamicCNN CNNModel { get; set; }
 
         public NASResult()
         {
@@ -1096,7 +1194,7 @@ namespace NASDemo
         public int Generation { get; set; }
         public string Algorithm { get; set; }
         public string DisplayName { get; set; }
-        public CNNModel CNNModel { get; set; }
+        public DynamicCNN CNNModel { get; set; }
 
         public ArchitectureViewModel(NASResult result)
         {
