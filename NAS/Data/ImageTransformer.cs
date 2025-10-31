@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
 
-namespace Курс.Data
+namespace NAS.Data
 {
     public class ImageTransformer
     {

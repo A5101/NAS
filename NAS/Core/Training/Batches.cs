@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static TorchSharp.torch;
 
-namespace Курс.Core.Training
+namespace NAS.Core.Training
 {
     public class PrecomputedBatch
     {

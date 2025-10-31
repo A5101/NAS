@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Курс.Core;
-using Курс.Core.Architecture;
+using NAS.Core;
+using NAS.Core.Architecture;
 
-namespace Курс.NAS.Generators
+namespace NAS.NAS.Generators
 {
     public class ArchitectureGenerator
     {

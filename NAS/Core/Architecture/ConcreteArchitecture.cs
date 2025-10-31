@@ -1,10 +1,11 @@
-﻿using System;
+﻿using NAS.Core.NeuralNetworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Курс.Core.Architecture
+namespace NAS.Core.Architecture
 {
     /// <summary>
     /// Представляет конкретную архитектуру нейронной сети, содержащую последовательность слоев
@@ -15,6 +16,8 @@ namespace Курс.Core.Architecture
         /// Список слоев архитектуры
         /// </summary>
         public List<Layer> Layers { get; set; }
+
+    
 
         /// <summary>
         /// Название архитектуры

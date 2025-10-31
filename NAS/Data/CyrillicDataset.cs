@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Курс.Data
+namespace NAS.Data
 {
     public class CyrillicDataset
     {
@@ -62,7 +62,7 @@ namespace Курс.Data
                 var imageFiles = Directory.GetFiles(classDir)
                     .Where(IsImageFile)
                     .Select(file => (file, classLabel))
-                    //.Take(50)
+                    .Take(20)
                     .ToList();
 
                 imageFiles = imageFiles.OrderBy(x => random.Next()).ToList();

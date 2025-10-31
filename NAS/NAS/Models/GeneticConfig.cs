@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Курс.NAS.Models
+namespace NAS.NAS.Models
 {
     public class GeneticConfig
     {

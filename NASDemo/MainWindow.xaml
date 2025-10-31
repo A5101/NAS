@@ -465,8 +465,8 @@
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
                         <Button x:Name="btnSortByAccuracy" Click="btnSortByAccuracy_Click" Content="📊 По точности" 
                             Style="{StaticResource ModernButtonStyle}" Width="150"/>
-                        <Button x:Name="btnSortByEfficiency" Content="⚡ По эффективности" 
-                            Style="{StaticResource ModernButtonStyle}" Click="btnSortByEfficiency_Click" Width="150"/>
+                        <Button x:Name="btnSaveModel" Content="Сохранить модель" 
+                            Style="{StaticResource ModernButtonStyle}" Click="btnSaveModel_Click" Width="150"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>

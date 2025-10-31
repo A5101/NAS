@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
 using SixLabors.ImageSharp;
-using Курс.Core.Training;
+using NAS.Core.Training;
 
-namespace Курс.Data
+namespace NAS.Data
 {
     public class CyrillicDataLoader
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch;
 
-namespace Курс.Core.Architecture
+namespace NAS.Core.Architecture
 {
     public class FullyConnectedLayer : Layer
     {

@@ -10,12 +10,16 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using static Курс.NAS.Controllers.RandomNASController;
-using Курс.Core.Architecture;
-using Курс.Data;
-using Курс.NAS.Controllers;
-using Курс.NAS.Models;
+using static NAS.NAS.Controllers.RandomNASController;
+using NAS.Core.Architecture;
+using NAS.Data;
+using NAS.NAS.Controllers;
+using NAS.NAS.Models;
 using static TorchSharp.torch;
+using NAS.Core.Training;
+using NAS.Core.NeuralNetworks;
+using Microsoft.Win32;
+using System.IO;
 
 namespace NASDemo
 {
@@ -864,32 +868,6 @@ namespace NASDemo
             canvas.Children.Add(border);
         }
 
-        private void DrawSimpleGraph(Canvas canvas, string title, double value)
-        {
-            var border = new Border
-            {
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(1),
-                Background = Brushes.White,
-                Width = canvas.Width,
-                Height = canvas.Height
-            };
-
-            var textBlock = new TextBlock
-            {
-                Text = $"{title}: {value:P2}",
-                FontSize = 12,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            var grid = new Grid();
-            grid.Children.Add(textBlock);
-            border.Child = grid;
-
-            canvas.Children.Add(border);
-        }
-
         private void lbArchitectures_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (lbArchitectures.SelectedItem is ArchitectureViewModel selected)
@@ -928,14 +906,95 @@ namespace NASDemo
             }
         }
 
-        private void btnSortByEfficiency_Click(object sender, RoutedEventArgs e)
+        private void btnSaveModel_Click(object sender, RoutedEventArgs e)
         {
-            var sorted = Architectures.OrderBy(a => a.Parameters).ThenByDescending(a => a.Accuracy).ToList();
-            Architectures.Clear();
-            foreach (var item in sorted)
+            if (lbArchitectures.SelectedItem is ArchitectureViewModel selected)
             {
-                Architectures.Add(item);
+                try
+                {
+                    // Создаем диалог для выбора папки сохранения
+                    var folderDialog = new OpenFolderDialog();
+
+                    if ((bool)folderDialog.ShowDialog())
+                    {
+                        string baseFileName = SanitizeFileName(selected.Name);
+                        string folderPath = folderDialog.FolderName;
+
+                        // Сохраняем оба файла
+                        SaveModelAsTwoFiles(selected.CNNModel, folderPath, baseFileName);
+
+                        // Показать сообщение об успехе
+                        MessageBox.Show(
+                            $"Модель '{selected.Name}' успешно сохранена!\n\n" +
+                            $"Файлы:\n" +
+                            $"• {baseFileName}.pth - веса модели\n" +
+                            $"• {baseFileName}_architecture.json - архитектура\n\n" +
+                            $"Папка: {folderPath}",
+                            "Сохранение завершено",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Ошибка при сохранении модели: {ex.Message}",
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
             }
+            else
+            {
+                MessageBox.Show(
+                    "Пожалуйста, выберите модель для сохранения",
+                    "Модель не выбрана",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
+
+        private void SaveModelAsTwoFiles(CNNModel model, string folderPath, string baseFileName)
+        {
+            // 1. Сохраняем веса модели в .pth файл
+            string weightsFilePath = System.IO.Path.Combine(folderPath, $"{baseFileName}.pth");
+            SaveWeightsToFile(model.ModelJSON, weightsFilePath);
+
+            // 2. Сохраняем архитектуру в .json файл
+            string architectureFilePath = System.IO.Path.Combine(folderPath, $"{baseFileName}_architecture.json");
+            SaveArchitectureToFile(model.ArchitectureJSON, architectureFilePath);
+        }
+
+        private void SaveWeightsToFile(string modelJson, string filePath)
+        {
+            // Декодируем Base64 строку и сохраняем как бинарный файл
+            byte[] modelData = Convert.FromBase64String(modelJson);
+            File.WriteAllBytes(filePath, modelData);
+            Console.WriteLine($"Веса модели сохранены: {filePath} ({modelData.Length} bytes)");
+        }
+
+        private void SaveArchitectureToFile(string architectureJson, string filePath)
+        {
+            // Парсим и переформатируем архитектуру для красивого сохранения
+            var architecture = System.Text.Json.JsonSerializer.Deserialize<object>(architectureJson);
+
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            string formattedJson = System.Text.Json.JsonSerializer.Serialize(architecture, options);
+            File.WriteAllText(filePath, formattedJson);
+            Console.WriteLine($"Архитектура сохранена: {filePath}");
+        }
+
+        private string SanitizeFileName(string fileName)
+        {
+            // Убираем запрещенные символы из имени файла
+            var invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            return string.Concat(fileName.Where(ch => !invalidChars.Contains(ch))).Replace(" ", "_");
         }
 
         private void btnExportResults_Click(object sender, RoutedEventArgs e)
@@ -972,8 +1031,7 @@ namespace NASDemo
 
         private void ExportResultsToFile(string filePath)
         {
-            // Реализация экспорта результатов
-            // Можно использовать System.Text.Json для сериализации
+
         }
     }
 
@@ -982,6 +1040,7 @@ namespace NASDemo
     public class NASResult
     {
         public ConcreteArchitecture Architecture { get; set; }
+
         public double Accuracy { get; set; }
         public double TrainingTime { get; set; }
         public int Parameters { get; set; }
@@ -990,6 +1049,7 @@ namespace NASDemo
         public DateTime Timestamp { get; set; }
         public List<string> GeneticHistory { get; set; }
         public List<TrainingEpoch> TrainingHistory { get; set; }
+        public CNNModel CNNModel { get; set; }
 
         public NASResult()
         {
@@ -1014,10 +1074,11 @@ namespace NASDemo
         public NASResult(RandomNASController.ArchitectureResult result, string algorithm)
         {
             Architecture = result.Architecture;
+            CNNModel = result.CNNModel;
             Accuracy = result.Accuracy;
             TrainingTime = result.TrainingTime;
             Parameters = result.Parameters;
-            Generation = 0; // Для случайного поиска поколение = 0
+            Generation = 0;
             Algorithm = algorithm;
             Timestamp = result.Timestamp;
             GeneticHistory = new List<string> { "Random Search" };
@@ -1035,10 +1096,12 @@ namespace NASDemo
         public int Generation { get; set; }
         public string Algorithm { get; set; }
         public string DisplayName { get; set; }
+        public CNNModel CNNModel { get; set; }
 
         public ArchitectureViewModel(NASResult result)
         {
             Name = result.Architecture.Name;
+            CNNModel = result.CNNModel;
             LayersCount = result.Architecture.Layers.Count;
             Accuracy = result.Accuracy;
             Parameters = result.Parameters;

@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
-using Курс.Core.NeuralNetworks;
 using static TorchSharp.torch.optim;
-using static Курс.NAS.Controllers.RandomNASController;
-using Курс.NAS.Controllers;
+using static NAS.NAS.Controllers.RandomNASController;
+using NAS.NAS.Controllers;
+using NAS.Core.Training;
+using NAS.Core.NeuralNetworks;
 
-namespace Курс.Core.Training
+namespace NAS.Core.Training
 {
     public class ModelTrainer
     {

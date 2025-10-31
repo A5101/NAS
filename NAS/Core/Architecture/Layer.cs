@@ -7,7 +7,7 @@ using static TorchSharp.torch.nn;
 using static TorchSharp.torch;
 using TorchSharp;
 
-namespace Курс.Core.Architecture
+namespace NAS.Core.Architecture
 {
     public abstract class Layer
     {

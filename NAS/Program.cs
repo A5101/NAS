@@ -2,11 +2,11 @@
 using static TorchSharp.torch;
 using TorchSharp.Modules;
 using TorchSharp;
-using Курс.Data;
-using Курс.NAS.Controllers;
-using Курс.NAS.Models;
+using NAS.Data;
+using NAS.NAS.Controllers;
+using NAS.NAS.Models;
 
-namespace Курс
+namespace NAS
 {
     internal class Program
     {

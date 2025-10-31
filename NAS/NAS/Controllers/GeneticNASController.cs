@@ -5,15 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
-using Курс.Core.Architecture;
-using Курс.NAS.Models;
-using Курс.Core.Training;
-using Курс.NAS.Generators;
-using Курс.Core.NeuralNetworks;
-using Курс.Data;
+using NAS.Core.Architecture;
+using NAS.NAS.Models;
+using NAS.Core.Training;
+using NAS.NAS.Generators;
+using NAS.Core.NeuralNetworks;
+using NAS.Data;
 using System.Diagnostics;
 
-namespace Курс.NAS.Controllers
+namespace NAS.NAS.Controllers
 {
     public class GeneticNASController
     {
@@ -40,6 +40,7 @@ namespace Курс.NAS.Controllers
         public class ArchitectureIndividual
         {
             public ConcreteArchitecture Architecture { get; set; }
+            
             public double Fitness { get; set; }
             public double Accuracy { get; set; }
             public double TrainingTime { get; set; }

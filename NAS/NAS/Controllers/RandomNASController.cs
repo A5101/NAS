@@ -5,15 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using static TorchSharp.torch;
 using TorchSharp;
-using Курс.Core.Architecture;
-using Курс.Core.Training;
-using Курс.Data;
-using Курс.NAS.Generators;
-using Курс.Core.NeuralNetworks;
-using static Курс.NAS.Controllers.GeneticNASController;
+using NAS.Core.Architecture;
+using NAS.Core.Training;
+using NAS.Data;
+using NAS.NAS.Generators;
+using NAS.Core.NeuralNetworks;
+using static NAS.NAS.Controllers.GeneticNASController;
 using NAS.Core.Training;
 
-namespace Курс.NAS.Controllers
+namespace NAS.NAS.Controllers
 {
     public class RandomNASController
     {
@@ -35,6 +35,7 @@ namespace Курс.NAS.Controllers
         public class ArchitectureResult
         {
             public ConcreteArchitecture Architecture { get; set; }
+            public CNNModel CNNModel { get; set; }
             public double Accuracy { get; set; }
             public double TrainingTime { get; set; }
             public int Parameters { get; set; }
@@ -154,6 +155,7 @@ namespace Курс.NAS.Controllers
                     Console.WriteLine(architecture.GetSummary());
 
                     using var model = new DynamicCNN(architecture, inputChannels: 1, device: _device, inputHeight: imageSize, inputWidth: imageSize);
+                    
                     var result = new ArchitectureResult
                     {
                         Architecture = architecture.Clone(),
@@ -168,7 +170,8 @@ namespace Курс.NAS.Controllers
                     result.TrainingTime = trainingTime;
 
                     AddArchitectureToTested(architecture);
-
+                    var modelData = model.Save();
+                    result.CNNModel = modelData;
                     progress?.Report(result);
                     _results.Add(result);
 

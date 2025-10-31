@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Курс\NAS.csproj" />
+    <ProjectReference Include="..\NAS\NAS.csproj" />
   </ItemGroup>
 
 </Project>
