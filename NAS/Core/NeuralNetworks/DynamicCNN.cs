@@ -186,7 +186,39 @@ namespace NAS.Core.NeuralNetworks
                 Console.WriteLine($"   Ошибка: {ex.Message}");
                 Console.WriteLine($"   StackTrace: {ex.StackTrace}");
             }
-        }     
+        }
+
+        public string SaveToJsonString()
+        {
+            using (var weightsStream = new System.IO.MemoryStream())
+            {
+                // Сохраняем веса в MemoryStream
+                this.save(weightsStream);
+                var weightsBase64 = Convert.ToBase64String(weightsStream.ToArray());
+
+                // Создаем JSON объект
+                var modelData = new
+                {
+                    Architecture = _architecture,
+                    Weights = weightsBase64,
+                    Metadata = new
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        TotalParameters = this.parameters().Sum(p => p.numel()),
+                        Device = parameters().First().device.ToString()
+                    }
+                };
+
+                return System.Text.Json.JsonSerializer.Serialize(
+                    modelData,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        WriteIndented = false, // Компактный формат
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    }
+                );
+            }
+        }
     }
 
     public class CNNModel

@@ -35,7 +35,7 @@ namespace NAS.NAS.Controllers
         public class ArchitectureResult
         {
             public ConcreteArchitecture Architecture { get; set; }
-            public DynamicCNN CNNModel { get; set; }
+            public CNNModel CNNModel { get; set; }
             public double Accuracy { get; set; }
             public double TrainingTime { get; set; }
             public int Parameters { get; set; }
@@ -170,7 +170,7 @@ namespace NAS.NAS.Controllers
                     result.TrainingTime = trainingTime;
 
                     AddArchitectureToTested(architecture);
-                    var modelData = model;
+                    var modelData = model.save;
                     result.CNNModel = modelData;
                     progress?.Report(result);
                     _results.Add(result);
@@ -299,6 +299,8 @@ namespace NAS.NAS.Controllers
 
             return string.Join("|", signature);
         }
+
+
     }
 
    
