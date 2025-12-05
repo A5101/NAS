@@ -909,219 +909,6 @@ namespace NASDemo
             }
         }
 
-        private async void btnDrawAndRecognize_Click(object sender, RoutedEventArgs e)
-        {
-            if (lbArchitectures.SelectedItem is ArchitectureViewModel selected)
-            {
-                var drawWindow = new DrawWindow();
-                drawWindow.Owner = this;
-
-                if (drawWindow.ShowDialog() == true && drawWindow.HasDrawing)
-                {
-                    try
-                    {
-                        btnDrawAndRecognize.IsEnabled = false;
-                        btnDrawAndRecognize.Content = "⏳ Обработка...";
-
-                        // Получаем изображение из окна рисования
-                        var bitmapSource = drawWindow.DrawnImage;
-
-                        if (bitmapSource != null)
-                        {
-                            // Конвертируем в тензор и распознаем
-                            var results = await ProcessAndRecognizeImage(bitmapSource, selected.CNNModel);
-
-                            // Отображаем результаты
-                            DisplayRecognitionResults(results);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Ошибка распознавания: {ex.Message}", "Ошибка",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    finally
-                    {
-                        btnDrawAndRecognize.IsEnabled = true;
-                        btnDrawAndRecognize.Content = "✏️ Нарисовать и распознать";
-                    }
-                }
-            }
-        }
-        private async Task<List<(string letter, double confidence)>> ProcessAndRecognizeImage(BitmapSource bitmapSource, DynamicCNN model)
-        {
-            return await Task.Run(() =>
-            {
-                // Конвертируем BitmapSource в тензор
-                var inputTensor = ConvertBitmapToTensor(bitmapSource);
-
-                model.eval();
-
-                using (no_grad())
-                {
-                    var output = model.forward(inputTensor);
-                    var probabilities = torch.nn.functional.softmax(output, dim: 1);
-                    var probArray = probabilities.cpu().data<float>().ToArray();
-
-                    var results = new List<(string, double confidence)>();
-
-                    // Получаем метки классов
-                    var classLabels = GetClassLabels();
-
-                    for (int i = 0; i < probArray.Length && i < classLabels.Count; i++)
-                    {
-                        double confidence = probArray[i] * 100.0;
-                        if (confidence > 0.1) // Показываем только вероятности > 0.1%
-                        {
-                            string letter = classLabels[i];
-                            results.Add((letter, confidence));
-                        }
-                    }
-
-                    output.Dispose();
-                    probabilities.Dispose();
-                    inputTensor.Dispose();
-
-                    return results.OrderByDescending(r => r.confidence).Take(5).ToList();
-                }
-            });
-        }
-
-        private Tensor ConvertBitmapToTensor(BitmapSource bitmapSource)
-        {
-            // Способ 1: Через массив байтов (надежнее)
-            byte[] bitmapData;
-
-            if (bitmapSource is System.Windows.Media.Imaging.BitmapImage bitmapImage)
-            {
-                // Если это BitmapImage, получаем данные из StreamSource
-                var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
-                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmapSource));
-
-                using (var stream = new System.IO.MemoryStream())
-                {
-                    encoder.Save(stream);
-                    bitmapData = stream.ToArray();
-                }
-            }
-            else
-            {
-                // Для других типов BitmapSource
-                bitmapData = ConvertBitmapSourceToByteArray(bitmapSource);
-            }
-
-            return ProcessImageBytesToTensor(bitmapData);
-        }
-
-        private byte[] ConvertBitmapSourceToByteArray(BitmapSource bitmapSource)
-        {
-            // Создаем копию в текущем потоке
-            var copiedBitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
-                bitmapSource.PixelWidth, bitmapSource.PixelHeight,
-                bitmapSource.DpiX, bitmapSource.DpiY,
-                PixelFormats.Pbgra32);
-
-            var drawingVisual = new DrawingVisual();
-            using (var drawingContext = drawingVisual.RenderOpen())
-            {
-                drawingContext.DrawImage(bitmapSource, new Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight));
-            }
-
-            copiedBitmap.Render(drawingVisual);
-
-            // Кодируем в PNG
-            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
-            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(copiedBitmap));
-
-            using (var stream = new System.IO.MemoryStream())
-            {
-                encoder.Save(stream);
-                return stream.ToArray();
-            }
-        }
-
-        private Tensor ProcessImageBytesToTensor(byte[] imageBytes)
-        {
-            using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imageBytes))
-            {
-                // Преобразуем в grayscale и ресайзим до 64x64
-                image.Mutate(x => x
-                    .Resize(64, 64)
-                    .Grayscale());
-
-                // Создаем тензор [1, 1, 64, 64]
-                var tensor = torch.zeros(new long[] { 1, 1, 64, 64 });
-
-                // Заполняем тензор значениями из изображения
-                for (int y = 0; y < 64; y++)
-                {
-                    for (int x = 0; x < 64; x++)
-                    {
-                        var pixel = image[x, y];
-                        // Инвертируем: черный = 1.0, белый = 0.0
-                        float value = 1.0f - (pixel.R / 255.0f);
-                        tensor[0, 0, y, x] = value;
-                    }
-                }
-
-                // Нормализуем как в ImageTransformer
-                var mean = torch.tensor(new float[] { 0.5f }).reshape(1, 1, 1, 1);
-                var std = torch.tensor(new float[] { 0.5f }).reshape(1, 1, 1, 1);
-
-                return (tensor - mean) / std;
-            }
-        }
-
-        private List<string> GetClassLabels()
-        {
-            return _dataLoader?.Dataset?.LabelToClass?
-                .OrderBy(kv => kv.Key)
-                .Select(kv => kv.Value)
-                .ToList() ?? GetDefaultCyrillicLabels();
-        }
-
-        private List<string> GetDefaultCyrillicLabels()
-        {
-            // Резервный список кириллических букв (А-Я + Ё)
-            var letters = new List<string>();
-
-            // А-Е
-            for (char c = 'А'; c <= 'Е'; c++)
-                letters.Add(c.ToString());
-
-            // Ё
-            letters.Add("Ё");
-
-            // Ж-Я  
-            for (char c = 'Ж'; c <= 'Я'; c++)
-                letters.Add(c.ToString());
-
-            return letters;
-        }
-
-        private void DisplayRecognitionResults(List<(string letter, double confidence)> results)
-        {
-            if (results.Count == 0)
-            {
-                tbRecognitionResult.Text = "Буква не распознана";
-                tbRecognitionConfidence.Text = "Уверенность: < 0.1%";
-                icTopPredictions.ItemsSource = null;
-            }
-            else
-            {
-                var topResult = results.First();
-                tbRecognitionResult.Text = $"Распознано: {topResult.letter}";
-                tbRecognitionConfidence.Text = $"Уверенность: {topResult.confidence:F1}%";
-
-                // Показываем топ-5 предсказаний
-                var topPredictions = results.Select(r =>
-                    $"{r.letter}: {r.confidence:F1}%").ToList();
-                icTopPredictions.ItemsSource = topPredictions;
-            }
-
-            recognitionResultBorder.Visibility = Visibility.Visible;
-        }
-
         private void btnExportResults_Click(object sender, RoutedEventArgs e)
         {
 
@@ -1147,7 +934,6 @@ namespace NASDemo
         public DateTime Timestamp { get; set; }
         public List<string> GeneticHistory { get; set; }
         public List<TrainingEpoch> TrainingHistory { get; set; }
-        public DynamicCNN CNNModel { get; set; }
 
         public NASResult()
         {
@@ -1172,7 +958,6 @@ namespace NASDemo
         public NASResult(RandomNASController.ArchitectureResult result, string algorithm)
         {
             Architecture = result.Architecture;
-            CNNModel = result.CNNModel;
             Accuracy = result.Accuracy;
             TrainingTime = result.TrainingTime;
             Parameters = result.Parameters;
@@ -1194,12 +979,10 @@ namespace NASDemo
         public int Generation { get; set; }
         public string Algorithm { get; set; }
         public string DisplayName { get; set; }
-        public DynamicCNN CNNModel { get; set; }
 
         public ArchitectureViewModel(NASResult result)
         {
             Name = result.Architecture.Name;
-            CNNModel = result.CNNModel;
             LayersCount = result.Architecture.Layers.Count;
             Accuracy = result.Accuracy;
             Parameters = result.Parameters;

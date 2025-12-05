@@ -9,22 +9,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NASDemo", "NASDemo\NASDemo.
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug-CPU|Any CPU = Debug-CPU|Any CPU
 		Debug-CUDA|Any CPU = Debug-CUDA|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Debug|Any CPU.ActiveCfg = Debug-CPU|Any CPU
-		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Debug|Any CPU.Build.0 = Debug-CPU|Any CPU
 		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Debug-CPU|Any CPU.ActiveCfg = Debug-CPU|Any CPU
 		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Debug-CPU|Any CPU.Build.0 = Debug-CPU|Any CPU
 		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Debug-CUDA|Any CPU.ActiveCfg = Debug-CUDA|Any CPU
 		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Debug-CUDA|Any CPU.Build.0 = Debug-CUDA|Any CPU
 		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Release|Any CPU.ActiveCfg = Debug-CPU|Any CPU
 		{E4A9517E-003B-4C6F-841A-34920D3E84F9}.Release|Any CPU.Build.0 = Debug-CPU|Any CPU
-		{76E3F8D5-CFE0-4E57-AE3C-A1652CB30B39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76E3F8D5-CFE0-4E57-AE3C-A1652CB30B39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76E3F8D5-CFE0-4E57-AE3C-A1652CB30B39}.Debug-CPU|Any CPU.ActiveCfg = Debug-CPU|Any CPU
 		{76E3F8D5-CFE0-4E57-AE3C-A1652CB30B39}.Debug-CPU|Any CPU.Build.0 = Debug-CPU|Any CPU
 		{76E3F8D5-CFE0-4E57-AE3C-A1652CB30B39}.Debug-CUDA|Any CPU.ActiveCfg = Debug-CUDA|Any CPU

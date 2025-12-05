@@ -170,8 +170,6 @@ namespace NAS.NAS.Controllers
                     result.TrainingTime = trainingTime;
 
                     AddArchitectureToTested(architecture);
-                    var modelData = model.save;
-                    result.CNNModel = modelData;
                     progress?.Report(result);
                     _results.Add(result);
 

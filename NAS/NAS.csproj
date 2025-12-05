@@ -5,12 +5,22 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Configurations>Debug;Release;Debug-CPU;Debug-CUDA</Configurations>
+		<Configurations>Release;Debug-CPU;Debug-CUDA</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="SharpCompress" Version="0.42.0" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
 		<PackageReference Include="TorchSharp" Version="0.105.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Cyrillic.rar">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Cyrillic.zip">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<Choose>
